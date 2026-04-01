@@ -27,7 +27,7 @@ class AkunResource extends Resource
                 ->label('Kode Akun')
                 ->required()
                 ->unique(ignoreRecord: true),
-
+// test perubahan
             Forms\Components\TextInput::make('nama_akun')
                 ->label('Nama Akun')
                 ->required(),
