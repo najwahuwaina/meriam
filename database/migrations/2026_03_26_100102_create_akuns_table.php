@@ -9,6 +9,7 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
+    //coba
     public function up(): void
     {
         Schema::create('akun', function (Blueprint $table) {
