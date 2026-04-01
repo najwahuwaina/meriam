@@ -25,6 +25,9 @@ use Filament\Forms\Components\Toggle;
 class MenuResource extends Resource
 {
     protected static ?string $model = Menu::class;
+    protected static ?string $navigationLabel = 'Menu';
+    protected static ?int $navigationSort = 1;
+    protected static bool $shouldRegisterNavigation = true;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 

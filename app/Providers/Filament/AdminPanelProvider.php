@@ -27,6 +27,10 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->resources([
+    \App\Filament\Resources\MenuResource::class,
+    \App\Filament\Resources\PelangganResource::class,
+])
             ->colors([
                 'primary' => Color::Amber,
             ])
