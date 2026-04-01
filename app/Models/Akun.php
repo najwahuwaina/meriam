@@ -14,7 +14,7 @@ class Akun extends Model
     protected $primaryKey = 'kode_akun';
     public $incrementing = false;
     protected $keyType = 'string';
-
+//coba
     protected $fillable = [
         'kode_akun',
         'nama_akun',
