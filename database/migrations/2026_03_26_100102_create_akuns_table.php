@@ -12,7 +12,7 @@ return new class extends Migration
     //coba
     public function up(): void
     {
-        Schema::table('akuns', function (Blueprint $table) {
+        Schema::create('akun', function (Blueprint $table) {
             $table->string('kode_akun')->primary();
             $table->string('nama_akun');
             $table->string('header_akun');

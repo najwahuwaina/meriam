@@ -10,19 +10,21 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
-{
-            Schema::table('akun', function (Blueprint $table) {
-            $table->string('email')->nullable();
-        });
-}
+    {
+         Schema::create('pelanggan', function (Blueprint $table) {
+        $table->bigIncrements('id_pelanggan');
+        $table->string('nama_pelanggan');
+        $table->string('no_telp');
+        $table->text('alamat');
+        $table->timestamps();
+    });
+    }
 
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::table('akuns', function (Blueprint $table) {
-            //
-        });
+        Schema::dropIfExists('pelanggan');
     }
 };
