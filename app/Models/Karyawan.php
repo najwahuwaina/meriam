@@ -20,9 +20,5 @@ class Karyawan extends Model
         'tanggal_lahir',
         'foto_ektp',
     ];
-
-public function pesanan()
-    {
-        return $this->hasMany(Pesanan::class, 'id_karyawan');
-    }
+    
 }

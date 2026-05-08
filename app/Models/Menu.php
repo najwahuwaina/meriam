@@ -17,8 +17,4 @@ class Menu extends Model
         'content',
     ];
 
-    public function detailPesanan()
-    {
-        return $this->hasMany(DetailPesanan::class, 'id_menu');
-    }
 }
