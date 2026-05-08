@@ -1,7 +1,14 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+<<<<<<< HEAD
 use Illuminate\Support\Facades\Mail;
+=======
+use App\Http\Controllers\PembelianBahanPDFController;
+
+Route::get('/export/pembelian-bahan/pdf', [PembelianBahanPDFController::class, 'export'])
+    ->name('export.pembelian-bahan.pdf');
+>>>>>>> f21a4d2 (nana)
 
 use App\Http\Controllers\MidtransController;
 

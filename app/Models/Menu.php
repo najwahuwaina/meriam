@@ -10,6 +10,7 @@ class Menu extends Model
     use HasFactory;
 
     protected $fillable = [
+<<<<<<< HEAD
         'nama_menu',
         'jenis_menu',
         'harga',
@@ -17,3 +18,18 @@ class Menu extends Model
         'content',
     ];
 }
+=======
+    'nama_menu',
+    'jenis_menu',
+    'harga',
+    'is_admin',
+    'content',
+];
+
+public function detailPesanan()
+    {
+        return $this->hasMany(DetailPesanan::class, 'id_menu');
+    }
+    
+}
+>>>>>>> f21a4d2 (nana)
