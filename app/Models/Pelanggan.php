@@ -9,8 +9,7 @@ class Pelanggan extends Model
 {
     use HasFactory;
 
-    protected $table = 'pelanggan'; // karena tidak pakai pelanggans
-
+    protected $table = 'pelanggan';
     protected $primaryKey = 'id_pelanggan';
 
     protected $fillable = [
@@ -18,4 +17,9 @@ class Pelanggan extends Model
         'no_telp',
         'alamat',
     ];
+
+    public function pesanan()
+    {
+        return $this->hasMany(Pesanan::class, 'id_pelanggan');
+    }
 }
