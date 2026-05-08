@@ -20,4 +20,5 @@ class Karyawan extends Model
         'tanggal_lahir',
         'foto_ektp',
     ];
+    
 }
