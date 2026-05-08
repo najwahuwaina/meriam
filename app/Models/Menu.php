@@ -15,4 +15,10 @@ class Menu extends Model
     'is_admin',
     'content',
 ];
+
+public function detailPesanan()
+    {
+        return $this->hasMany(DetailPesanan::class, 'id_menu');
+    }
+    
 }

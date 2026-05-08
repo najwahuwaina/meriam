@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\BahanBaku;
 
 class PembelianBahan extends Model
 {
@@ -20,7 +19,7 @@ class PembelianBahan extends Model
             $sisa = $total - $pembelian->dibayar;
 
             $pembelian->update([
-                'total_harga' => $total,
+                'tagihan' => $total,
                 'sisa' => $sisa,
             ]);
 
@@ -38,8 +37,8 @@ class PembelianBahan extends Model
                 $pembelian->bahanBaku->increment('stok', $selisih);
             }
 
-            $pembelian->total_harga = $pembelian->jumlah * $pembelian->harga_beli;
-            $pembelian->sisa = $pembelian->total_harga - $pembelian->dibayar;
+            $pembelian->tagihan = $pembelian->jumlah * $pembelian->harga_beli;
+            $pembelian->sisa = $pembelian->tagihan - $pembelian->dibayar;
         });
 
         static::deleted(function ($pembelian) {
@@ -51,7 +50,7 @@ class PembelianBahan extends Model
 
     public function bahanBaku()
     {
-        return $this->belongsTo(BahanBaku::class);
+        return $this->belongsTo(BahanBaku::class, 'bahan_baku_id');
     }
 
     public static function generateKode()
