@@ -28,11 +28,11 @@ class BahanBakuResource extends Resource
                 ->schema([
 
                     Forms\Components\TextInput::make('kode_bahan')
-                        ->label('Kode Bahan')
-                        ->default(fn () => BahanBaku::getKodeBahan())
-                        ->disabled()         // tidak bisa diedit manual
-                        ->dehydrated()       // tetap disimpan ke DB meski disabled
-                        ->required(),
+    ->label('Kode Bahan')
+    ->default(fn () => \App\Models\BahanBaku::generateKodeBahan())  // ✅ UBAH INI
+    ->disabled()
+    ->dehydrated()
+    ->required(),
 
                     Forms\Components\TextInput::make('nama_bahan')
                         ->label('Nama Bahan')
