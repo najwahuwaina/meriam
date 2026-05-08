@@ -9,13 +9,14 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    //coba
     public function up(): void
     {
-        Schema::create('akun', function (Blueprint $table) {
-            $table->string('kode_akun')->primary();
-            $table->string('nama_akun');
-            $table->string('header_akun');
+        Schema::create('suppliers', function (Blueprint $table) {
+            $table->id();
+            $table->string('kode_supplier');
+            $table->string('nama_supplier');
+            $table->string('alamat_supplier');
+            $table->string('no_telp');
             $table->timestamps();
         });
     }
@@ -25,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('akun');
+        Schema::dropIfExists('suppliers');
     }
 };
