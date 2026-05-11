@@ -8,15 +8,19 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('pesanan', function (Blueprint $table) {
-            $table->string('status')->default('Belum Dibayar');
+        Schema::table('pelanggan', function (Blueprint $table) {
+
+            $table->string('email')->nullable()->after('nama_pelanggan');
+
         });
     }
 
     public function down(): void
     {
-        Schema::table('pesanan', function (Blueprint $table) {
-            $table->dropColumn('status');
+        Schema::table('pelanggan', function (Blueprint $table) {
+
+            $table->dropColumn('email');
+
         });
     }
 };
