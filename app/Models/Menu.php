@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\DetailPesanan;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -17,4 +18,9 @@ class Menu extends Model
         'content',
     ];
 
+    
+    public function detailPesanan()
+    {
+        return $this->hasMany(DetailPesanan::class, 'id_menu');
+    }
 }
