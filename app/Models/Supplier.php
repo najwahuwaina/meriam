@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 // tambahan
 use Illuminate\Support\Facades\DB;
-
+//coba
 class Supplier extends Model
 {
     use HasFactory;
