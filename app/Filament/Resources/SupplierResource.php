@@ -28,7 +28,8 @@ class SupplierResource extends Resource
 
     // tambahan buat grup masterdata
     protected static ?string $navigationGroup = 'Masterdata';
-
+    //push baru disini
+    
     public static function canViewAny(): bool
     {
         return true;
