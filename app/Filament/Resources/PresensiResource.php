@@ -17,7 +17,7 @@ class PresensiResource extends Resource
 {
     protected static ?string $model = Presensi::class;
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-check';
-    protected static ?string $navigationGroup = 'Manajemen Karyawan';
+    protected static ?string $navigationGroup = 'Transaksi';
     protected static ?string $navigationLabel = 'Presensi';
 
     public static function form(Form $form): Form
