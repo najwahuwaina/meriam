@@ -37,6 +37,10 @@ class PelangganResource extends Resource
     Forms\Components\Textarea::make('alamat')
         ->label('Alamat')
         ->required(),
+    
+    Forms\Components\TextInput::make('email')
+    ->email()
+    ->required(),
 ]);
     }
 
@@ -54,6 +58,9 @@ class PelangganResource extends Resource
 
     Tables\Columns\TextColumn::make('alamat')
         ->limit(30),
+    
+    Tables\Columns\TextColumn::make('email')
+    ->searchable(),
 ])
             ->filters([
                 //

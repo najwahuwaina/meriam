@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('failed_import_rows', function (Blueprint $table) {
             $table->id();
-            $table->text('row_data'); // contoh kolom untuk menyimpan data baris yang gagal
+            $table->text('row_data'); // kolom untuk menyimpan data baris yang gagal
             $table->timestamps();
         });
     }
