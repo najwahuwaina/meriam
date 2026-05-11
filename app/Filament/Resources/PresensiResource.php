@@ -16,6 +16,10 @@ class PresensiResource extends Resource
     protected static ?string $model = Presensi::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-check';
+<<<<<<< HEAD
+=======
+    protected static ?string $navigationGroup = 'Transaksi';
+>>>>>>> 4897bcbacaea23ed3e0292787bb48900fd92faa7
     protected static ?string $navigationLabel = 'Presensi';
     protected static ?string $navigationGroup = 'Transaksi';
 
