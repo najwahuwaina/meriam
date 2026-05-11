@@ -16,5 +16,4 @@ class Menu extends Model
         'is_admin',
         'content',
     ];
-
 }

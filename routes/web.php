@@ -1,18 +1,38 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Mail;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "web" middleware group. Make something great!
-|
-*/
+use App\Http\Controllers\MidtransController;
+
+use App\Mail\TesMail;
 
 Route::get('/', function () {
+
     return view('welcome');
+
+});
+
+Route::get(
+    '/payment/{id}',
+    [MidtransController::class, 'payment']
+)->name('payment');
+
+Route::post(
+    '/midtrans/notification',
+    [MidtransController::class, 'notification']
+);
+
+Route::get(
+    '/payment-success/{id}',
+    [MidtransController::class, 'paymentSuccess']
+)->name('payment.success');
+
+Route::get('/test-mail', function () {
+
+    Mail::to('julianidebora77@gmail.com')
+        ->send(new TesMail());
+
+    return 'Email berhasil dikirim';
+
 });
