@@ -2,88 +2,134 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Pesanan;
-use App\Models\Pembayaran;
 use Illuminate\Http\Request;
+
+use App\Models\Pesanan;
+
 use Midtrans\Config;
 use Midtrans\Snap;
-use Midtrans\Notification;
 
 class MidtransController extends Controller
 {
     public function payment($id)
     {
-        $pesanan = Pesanan::with('pelanggan')->findOrFail($id);
+        $pesanan = Pesanan::with('pelanggan')
+            ->findOrFail($id);
 
-        // Konfigurasi Midtrans
         Config::$serverKey = config('midtrans.server_key');
+
         Config::$isProduction = config('midtrans.is_production');
+
         Config::$isSanitized = true;
+
         Config::$is3ds = true;
 
-        // ORDER ID unik (wajib)
-        $orderId = 'ORDER-' . $pesanan->id_pesanan . '-' . uniqid();
+        $pesanan->update([
+            'status' => 'pending'
+        ]);
 
-        // Parameter transaksi
         $params = [
+
             'transaction_details' => [
-                'order_id' => $orderId,
+
+                'order_id' => 'ORDER-' .
+                    $pesanan->id_pesanan .
+                    '-' .
+                    time(),
+
                 'gross_amount' => $pesanan->total_harga,
+
             ],
+
             'customer_details' => [
-                'first_name' => $pesanan->pelanggan->nama_pelanggan ?? 'Customer',
+
+                'first_name' => $pesanan->pelanggan->nama_pelanggan,
+
             ],
+
+            'callbacks' => [
+
+                'finish' => route(
+                    'payment.success',
+                    $pesanan->id_pesanan
+                ),
+
+            ],
+
+            'notification_url' => env(
+                'MIDTRANS_NOTIFICATION_URL'
+            ),
+
         ];
 
-        // Snap Token
         $snapToken = Snap::getSnapToken($params);
 
-        // Simpan pembayaran
-        Pembayaran::updateOrCreate(
-            [
-                'id_pesanan' => $pesanan->id_pesanan,
-            ],
-            [
-                'order_id' => $orderId,
-                'tgl_bayar' => now(),
-                'subtotal' => $pesanan->total_harga,
-                'ppn' => $pesanan->total_harga * 0.11,
-                'total_bayar' => $pesanan->total_harga + ($pesanan->total_harga * 0.11),
-                'snap_token' => $snapToken,
-                'transaction_status' => 'pending',
-            ]
+        return view(
+            'midtrans.payment',
+            compact(
+                'snapToken',
+                'pesanan'
+            )
         );
-
-        return view('midtrans.payment', compact('snapToken', 'pesanan'));
     }
 
-    // 🔥 WEBHOOK MIDTRANS (AUTO UPDATE STATUS)
     public function notification(Request $request)
     {
-        Config::$serverKey = config('midtrans.server_key');
-        Config::$isProduction = config('midtrans.is_production');
-        Config::$isSanitized = true;
-        Config::$is3ds = true;
+        $orderId = $request->order_id;
 
-        $notification = new Notification();
+        $transactionStatus =
+            $request->transaction_status;
 
-        $transactionStatus = $notification->transaction_status;
-        $orderId = $notification->order_id;
+        $orderId = explode('-', $orderId);
 
-        $pembayaran = Pembayaran::where('order_id', $orderId)->first();
+        $idPesanan = $orderId[1];
 
-        if ($pembayaran) {
-            if ($transactionStatus == 'settlement' || $transactionStatus == 'capture') {
-                $pembayaran->transaction_status = 'success';
-            } elseif ($transactionStatus == 'pending') {
-                $pembayaran->transaction_status = 'pending';
-            } elseif (in_array($transactionStatus, ['expire', 'cancel'])) {
-                $pembayaran->transaction_status = 'failed';
-            }
+        $pesanan = Pesanan::find($idPesanan);
 
-            $pembayaran->save();
+        if (!$pesanan) {
+
+            return response()->json([
+                'message' => 'Pesanan tidak ditemukan'
+            ]);
         }
 
-        return response()->json(['status' => 'ok']);
+        if ($transactionStatus == 'settlement') {
+
+            $pesanan->update([
+                'status' => 'paid'
+            ]);
+        }
+
+        else if ($transactionStatus == 'pending') {
+
+            $pesanan->update([
+                'status' => 'pending'
+            ]);
+        }
+
+        else if (
+            $transactionStatus == 'expire' ||
+            $transactionStatus == 'cancel'
+        ) {
+
+            $pesanan->update([
+                'status' => 'failed'
+            ]);
+        }
+
+        return response()->json([
+            'message' => 'Notification berhasil'
+        ]);
+    }
+
+    public function paymentSuccess($id)
+    {
+        $pesanan = Pesanan::findOrFail($id);
+
+        $pesanan->update([
+            'status' => 'paid'
+        ]);
+
+        return redirect('/admin/pesanans');
     }
 }
