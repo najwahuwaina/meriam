@@ -39,7 +39,7 @@ class AkunResource extends Resource
                     'Liabilitas' => 'Liabilitas',
                     'Ekuitas' => 'Ekuitas',
                     'Pendapatan' => 'Pendapatan',
-                    'Beban' => 'Beban',
+                    'Beban' => 'Beban',1
                 ])
                 ->required(),
         ]);

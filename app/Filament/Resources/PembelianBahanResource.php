@@ -2,27 +2,33 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Exports\PembelianBahanExporter;
 use App\Filament\Resources\PembelianBahanResource\Pages;
-use App\Models\PembelianBahan;
 use App\Models\BahanBaku;
-
-use Filament\Forms;
+use App\Models\PembelianBahan;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Wizard;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Table;
-
-// Components
-use Filament\Forms\Components\Wizard;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Placeholder;
-use Filament\Forms\Components\Textarea;
-
+use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ExportAction;
+use Filament\Tables\Actions\ExportBulkAction;
+use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Table;
 
 class PembelianBahanResource extends Resource
 {
@@ -38,200 +44,235 @@ class PembelianBahanResource extends Resource
 
     public static function form(Form $form): Form
     {
-        return $form
-            ->columns(1)
-            ->schema([
+        return $form->columns(1)->schema([
+            Wizard::make([
 
-                Wizard::make([
+                /*
+                |--------------------------------------------------------------------------
+                | STEP DATA PEMBELIAN
+                |--------------------------------------------------------------------------
+                */
 
-                    // =========================
-                    // STEP 1
-                    // =========================
-                    Wizard\Step::make('Data Pembelian')
-                        ->icon('heroicon-m-document-text')
-                        ->schema([
+                Wizard\Step::make('Data Pembelian')
+                    ->icon('heroicon-m-document-text')
+                    ->schema([
 
-                            Section::make('Informasi Pembelian')
-                                ->schema([
+                        Section::make('Informasi Pembelian')
+                            ->schema([
 
-                                    TextInput::make('kode_pembelian')
-                                        ->label('Kode Pembelian')
-                                        ->default(fn () => PembelianBahan::generateKode())
-                                        ->required()
-                                        ->readOnly(),
+                                TextInput::make('kode_pembelian')
+                                    ->label('Kode Pembelian')
+                                    ->default(fn () => PembelianBahan::generateKode())
+                                    ->required()
+                                    ->readOnly(),
 
-                                    DatePicker::make('tanggal')
-                                        ->default(today())
-                                        ->required(),
+                                DatePicker::make('tanggal')
+                                    ->default(today())
+                                    ->required(),
 
-                                    Select::make('bahan_baku_id')
-                                        ->label('Bahan Baku')
-                                        ->options(
-                                            BahanBaku::pluck('nama_bahan', 'id')->toArray()
-                                        )
-                                        ->searchable()
-                                        ->preload()
-                                        ->required(),
+                                Select::make('bahan_baku_id')
+                                    ->label('Bahan Baku')
+                                    ->options(
+                                        BahanBaku::pluck('nama_bahan', 'id')->toArray()
+                                    )
+                                    ->searchable()
+                                    ->preload()
+                                    ->required(),
 
-                                    TextInput::make('jumlah')
-                                        ->numeric()
-                                        ->default(1)
-                                        ->required()
-                                        ->live(),
+                                Select::make('supplier_id')
+                                    ->label('Supplier')
+                                    ->relationship('supplier', 'nama_supplier')
+                                    ->searchable()
+                                    ->preload()
+                                    ->required(),
 
-                                    TextInput::make('harga_beli')
-                                        ->label('Harga Beli')
-                                        ->numeric()
-                                        ->required()
-                                        ->prefix('Rp')
-                                        ->live(),
+                                TextInput::make('jumlah')
+                                    ->numeric()
+                                    ->default(1)
+                                    ->required()
+                                    ->live(),
 
-                                    Placeholder::make('total_harga_view')
-                                        ->label('Total Harga')
-                                        ->content(function ($get) {
-                                            $total =
-                                                ((float) $get('jumlah')) *
-                                                ((float) $get('harga_beli'));
+                                TextInput::make('harga_beli')
+                                    ->label('Harga Beli')
+                                    ->numeric()
+                                    ->required()
+                                    ->prefix('Rp')
+                                    ->live(),
 
-                                            return 'Rp ' . number_format($total, 0, ',', '.');
-                                        }),
+                                Placeholder::make('total_harga_view')
+                                    ->label('Total Harga')
+                                    ->content(function ($get) {
 
-                                ])
-                                ->columns(2)
-                                ->collapsible()
-                                ->columnSpanFull(),
+                                        $total =
+                                            ((float) $get('jumlah')) *
+                                            ((float) $get('harga_beli'));
 
-                        ]),
+                                        return 'Rp ' .
+                                            number_format($total, 0, ',', '.');
+                                    }),
 
-                    // =========================
-                    // STEP 2
-                    // =========================
-                    Wizard\Step::make('Pembayaran')
-                        ->icon('heroicon-m-banknotes')
-                        ->schema([
+                            ])
+                            ->columns(2)
+                            ->collapsible()
+                            ->columnSpanFull(),
 
-                            Section::make('Detail Pembayaran')
-                                ->schema([
+                    ]),
 
-                                    Select::make('status_pembayaran')
-                                        ->label('Status Pembayaran')
-                                        ->options([
-                                            'belum_bayar' => 'Belum Bayar',
-                                            'sebagian' => 'Sebagian',
-                                            'lunas' => 'Lunas',
-                                        ])
-                                        ->default('belum_bayar')
-                                        ->required()
-                                        ->live(),
+                /*
+                |--------------------------------------------------------------------------
+                | STEP PEMBAYARAN
+                |--------------------------------------------------------------------------
+                */
 
-                                    Select::make('metode_pembayaran')
-                                        ->label('Metode Pembayaran')
-                                        ->options([
-                                            'cash' => 'Cash',
-                                            'debit' => 'Debit',
-                                            'kredit' => 'Kredit',
-                                        ])
-                                        ->visible(
-                                            fn ($get) =>
-                                            $get('status_pembayaran') !== 'belum_bayar'
-                                        ),
+                Wizard\Step::make('Pembayaran')
+                    ->icon('heroicon-m-banknotes')
+                    ->schema([
 
-                                    TextInput::make('dibayar')
-                                        ->numeric()
-                                        ->default(0)
-                                        ->prefix('Rp')
-                                        ->visible(
-                                            fn ($get) =>
-                                            $get('status_pembayaran') !== 'belum_bayar'
-                                        )
-                                        ->live(),
+                        Section::make('Detail Pembayaran')
+                            ->schema([
 
-                                    DatePicker::make('jatuh_tempo')
-                                        ->visible(
-                                            fn ($get) =>
-                                            $get('metode_pembayaran') === 'kredit'
-                                        ),
+                                Select::make('status_pembayaran')
+                                    ->label('Status Pembayaran')
+                                    ->options([
+                                        'belum_bayar' => 'Belum Bayar',
+                                        'sebagian' => 'Sebagian',
+                                        'lunas' => 'Lunas',
+                                    ])
+                                    ->default('belum_bayar')
+                                    ->required()
+                                    ->live(),
 
-                                    TextInput::make('supplier')
-                                        ->maxLength(255),
+                                Select::make('metode_pembayaran')
+                                    ->label('Metode Pembayaran')
+                                    ->options([
+                                        'cash' => 'Cash',
+                                        'debit' => 'Debit',
+                                        'kredit' => 'Kredit',
+                                    ])
+                                    ->visible(
+                                        fn ($get) =>
+                                            $get('status_pembayaran')
+                                            !== 'belum_bayar'
+                                    )
+                                    ->live(),
 
-                                    Textarea::make('keterangan')
-                                        ->rows(3)
-                                        ->columnSpanFull(),
+                                TextInput::make('dibayar')
+                                    ->numeric()
+                                    ->default(0)
+                                    ->prefix('Rp')
+                                    ->visible(
+                                        fn ($get) =>
+                                            $get('status_pembayaran')
+                                            !== 'belum_bayar'
+                                    )
+                                    ->live(),
 
-                                ])
-                                ->columns(2)
-                                ->collapsible()
-                                ->columnSpanFull(),
+                                DatePicker::make('jatuh_tempo')
+                                    ->visible(
+                                        fn ($get) =>
+                                            $get('metode_pembayaran')
+                                            === 'kredit'
+                                    ),
 
-                        ]),
+                                FileUpload::make('foto_struk')
+                                    ->label('Foto Struk')
+                                    ->image()
+                                    ->disk('public')
+                                    ->directory('struk-pembelian')
+                                    ->visibility('public')
+                                    ->nullable()
+                                    ->preserveFilenames()
+                                    ->columnSpanFull(),
 
-                    // =========================
-                    // STEP 3
-                    // =========================
-                    Wizard\Step::make('Ringkasan')
-                        ->icon('heroicon-m-clipboard-document-check')
-                        ->schema([
+                                Textarea::make('keterangan')
+                                    ->rows(3)
+                                    ->columnSpanFull(),
 
-                            Section::make('Ringkasan Pembayaran')
-                                ->schema([
+                            ])
+                            ->columns(2)
+                            ->collapsible()
+                            ->columnSpanFull(),
 
-                                    Placeholder::make('ringkasan_total')
-                                        ->label('Total Harga')
-                                        ->content(function ($get) {
+                    ]),
 
-                                            $total =
-                                                ((float) $get('jumlah')) *
-                                                ((float) $get('harga_beli'));
+                /*
+                |--------------------------------------------------------------------------
+                | STEP RINGKASAN
+                |--------------------------------------------------------------------------
+                */
 
-                                            return 'Rp ' . number_format($total, 0, ',', '.');
-                                        }),
+                Wizard\Step::make('Ringkasan')
+                    ->icon('heroicon-m-clipboard-document-check')
+                    ->schema([
 
-                                    Placeholder::make('ringkasan_dibayar')
-                                        ->label('Dibayar')
-                                        ->content(function ($get) {
+                        Section::make('Ringkasan Pembayaran')
+                            ->schema([
 
-                                            return 'Rp ' . number_format(
+                                Placeholder::make('ringkasan_total')
+                                    ->label('Total Harga')
+                                    ->content(function ($get) {
+
+                                        $total =
+                                            ((float) $get('jumlah')) *
+                                            ((float) $get('harga_beli'));
+
+                                        return 'Rp ' .
+                                            number_format($total, 0, ',', '.');
+                                    }),
+
+                                Placeholder::make('ringkasan_dibayar')
+                                    ->label('Dibayar')
+                                    ->content(function ($get) {
+
+                                        return 'Rp ' .
+                                            number_format(
                                                 (float) ($get('dibayar') ?? 0),
                                                 0,
                                                 ',',
                                                 '.'
                                             );
-                                        }),
+                                    }),
 
-                                    Placeholder::make('ringkasan_sisa')
-                                        ->label('Sisa Pembayaran')
-                                        ->content(function ($get) {
+                                Placeholder::make('ringkasan_sisa')
+                                    ->label('Sisa Pembayaran')
+                                    ->content(function ($get) {
 
-                                            $total =
-                                                ((float) $get('jumlah')) *
-                                                ((float) $get('harga_beli'));
+                                        $total =
+                                            ((float) $get('jumlah')) *
+                                            ((float) $get('harga_beli'));
 
-                                            $dibayar = (float) ($get('dibayar') ?? 0);
+                                        $dibayar =
+                                            (float) ($get('dibayar') ?? 0);
 
-                                            return 'Rp ' . number_format(
+                                        return 'Rp ' .
+                                            number_format(
                                                 $total - $dibayar,
                                                 0,
                                                 ',',
                                                 '.'
                                             );
-                                        }),
+                                    }),
 
-                                ])
-                                ->columns(3)
-                                ->columnSpanFull(),
+                            ])
+                            ->columns(3)
+                            ->columnSpanFull(),
 
-                        ]),
+                    ]),
 
-                ])
-                ->columnSpanFull()
-
-            ]);
+            ])->columnSpanFull(),
+        ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
+
+            /*
+            |--------------------------------------------------------------------------
+            | COLUMNS
+            |--------------------------------------------------------------------------
+            */
+
             ->columns([
 
                 TextColumn::make('kode_pembelian')
@@ -248,22 +289,28 @@ class PembelianBahanResource extends Resource
                 TextColumn::make('total_harga')
                     ->label('Total')
                     ->formatStateUsing(
-                        fn ($state) => 'Rp ' . number_format($state, 0, ',', '.')
+                        fn ($state) =>
+                            'Rp ' . number_format($state, 0, ',', '.')
                     )
                     ->sortable()
                     ->alignment('end'),
 
                 TextColumn::make('dibayar')
                     ->formatStateUsing(
-                        fn ($state) => 'Rp ' . number_format($state, 0, ',', '.')
+                        fn ($state) =>
+                            'Rp ' . number_format($state, 0, ',', '.')
                     )
                     ->alignment('end'),
 
                 TextColumn::make('sisa')
                     ->formatStateUsing(
-                        fn ($state) => 'Rp ' . number_format($state, 0, ',', '.')
+                        fn ($state) =>
+                            'Rp ' . number_format($state, 0, ',', '.')
                     )
-                    ->color(fn ($state) => $state > 0 ? 'danger' : 'success')
+                    ->color(
+                        fn ($state) =>
+                            $state > 0 ? 'danger' : 'success'
+                    )
                     ->alignment('end'),
 
                 TextColumn::make('status_pembayaran')
@@ -278,6 +325,13 @@ class PembelianBahanResource extends Resource
                     ->date(),
 
             ])
+
+            /*
+            |--------------------------------------------------------------------------
+            | FILTER
+            |--------------------------------------------------------------------------
+            */
+
             ->filters([
 
                 SelectFilter::make('status_pembayaran')
@@ -285,21 +339,77 @@ class PembelianBahanResource extends Resource
                         'belum_bayar' => 'Belum Bayar',
                         'sebagian' => 'Sebagian',
                         'lunas' => 'Lunas',
-                    ])
+                    ]),
 
             ])
+
+            /*
+            |--------------------------------------------------------------------------
+            | HEADER ACTION
+            |--------------------------------------------------------------------------
+            */
+
+            ->headerActions([
+
+                ExportAction::make()
+                    ->exporter(PembelianBahanExporter::class),
+
+                Action::make('download_pdf')
+                    ->label('Unduh PDF')
+                    ->icon('heroicon-o-document-arrow-down')
+                    ->color('success')
+
+                    ->action(function () {
+
+                        $data = PembelianBahan::all();
+
+                        $pdf = Pdf::loadView(
+                            'pdf.PembelianBahan',
+                            [
+                                'data' => $data,
+                            ]
+                        );
+
+                        return response()->streamDownload(
+                            fn () => print($pdf->output()),
+                            'laporan-pembelian-bahan.pdf'
+                        );
+                    }),
+
+            ])
+
+            /*
+            |--------------------------------------------------------------------------
+            | ROW ACTION
+            |--------------------------------------------------------------------------
+            */
+
             ->actions([
 
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                ViewAction::make(),
+
+                EditAction::make(),
+
+                DeleteAction::make(),
 
             ])
+
+            /*
+            |--------------------------------------------------------------------------
+            | BULK ACTION
+            |--------------------------------------------------------------------------
+            */
+
             ->bulkActions([
 
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ])
+                BulkActionGroup::make([
+
+                    DeleteBulkAction::make(),
+
+                    ExportBulkAction::make()
+                        ->exporter(PembelianBahanExporter::class),
+
+                ]),
 
             ]);
     }
@@ -307,9 +417,9 @@ class PembelianBahanResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListPembelianBahans::route('/'),
+            'index'  => Pages\ListPembelianBahans::route('/'),
             'create' => Pages\CreatePembelianBahan::route('/create'),
-            'edit' => Pages\EditPembelianBahan::route('/{record}/edit'),
+            'edit'   => Pages\EditPembelianBahan::route('/{record}/edit'),
         ];
     }
 }

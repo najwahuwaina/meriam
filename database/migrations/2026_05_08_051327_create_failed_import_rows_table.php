@@ -1,9 +1,9 @@
 <?php
-//
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-//coba
+
 return new class extends Migration
 {
     /**
@@ -11,13 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-         Schema::create('pelanggan', function (Blueprint $table) {
-        $table->bigIncrements('id_pelanggan');
-        $table->string('nama_pelanggan');
-        $table->string('no_telp');
-        $table->text('alamat');
-        $table->timestamps();
-    });
+        Schema::create('failed_import_rows', function (Blueprint $table) {
+            $table->id();
+            $table->timestamps();
+        });
     }
 
     /**
@@ -25,6 +22,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('pelanggan');
+        Schema::dropIfExists('failed_import_rows');
     }
 };
