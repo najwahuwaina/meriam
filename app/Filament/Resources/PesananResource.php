@@ -327,9 +327,9 @@ class PesananResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListPesanans::route('/'),
+            'index'  => Pages\ListPesanans::route('/'),
             'create' => Pages\CreatePesanan::route('/create'),
-            'edit' => Pages\EditPesanan::route('/{record}/edit'),
+            'edit'   => Pages\EditPesanan::route('/{record}/edit'),
         ];
     }
 }
