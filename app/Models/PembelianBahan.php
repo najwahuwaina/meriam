@@ -53,11 +53,6 @@ class PembelianBahan extends Model
         return $this->belongsTo(BahanBaku::class, 'bahan_baku_id');
     }
 
-      public function supplier()
-    {
-        return $this->belongsTo(Supplier::class);
-    }
-
     public static function generateKode()
     {
         $last = self::latest()->first();
