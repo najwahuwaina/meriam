@@ -3,36 +3,42 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\PesananResource\Pages;
-use App\Mail\InvoicePesanan;
-use App\Models\Menu;
-use App\Models\Pesanan;
 
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\Pesanan;
+use App\Models\Menu;
+
+use App\Mail\InvoicePesanan;
+
+use Illuminate\Support\Facades\Mail;
 
 use Filament\Forms;
 use Filament\Forms\Form;
-
-use Filament\Forms\Components\Wizard;
-use Filament\Forms\Components\Wizard\Step;
 
 use Filament\Resources\Resource;
 
 use Filament\Tables;
 use Filament\Tables\Table;
 
-use Illuminate\Support\Facades\Mail;
+use Filament\Forms\Components\Wizard;
+use Filament\Forms\Components\Wizard\Step;
+
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class PesananResource extends Resource
 {
     protected static ?string $model = Pesanan::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-shopping-cart';
+    protected static ?string $navigationIcon =
+        'heroicon-o-shopping-cart';
 
-    protected static ?string $navigationLabel = 'Pesanan';
+    protected static ?string $navigationLabel =
+        'Pesanan';
 
-    protected static ?string $navigationGroup = 'Transaksi';
+    protected static ?string $navigationGroup =
+        'Transaksi';
 
-    protected static ?string $maxContentWidth = 'Full';
+    protected static ?string $maxContentWidth =
+        'Full';
 
     public static function form(Form $form): Form
     {
@@ -44,124 +50,212 @@ class PesananResource extends Resource
                     Step::make('Pesanan')
                         ->schema([
 
-                            Forms\Components\Select::make('id_pelanggan')
+                            Forms\Components\Select::make(
+                                'id_pelanggan'
+                            )
                                 ->label('Pelanggan')
-                                ->relationship('pelanggan', 'nama_pelanggan')
+                                ->relationship(
+                                    'pelanggan',
+                                    'nama_pelanggan'
+                                )
                                 ->searchable()
                                 ->preload()
                                 ->required(),
 
-                            Forms\Components\Select::make('id_karyawan')
+                            Forms\Components\Select::make(
+                                'id_karyawan'
+                            )
                                 ->label('Karyawan')
-                                ->relationship('karyawan', 'nama_karyawan')
+                                ->relationship(
+                                    'karyawan',
+                                    'nama_karyawan'
+                                )
                                 ->searchable()
                                 ->preload()
                                 ->required(),
 
-                            Forms\Components\DatePicker::make('tgl_pesanan')
-                                ->label('Tanggal Pesanan')
+                            Forms\Components\DatePicker::make(
+                                'tgl_pesanan'
+                            )
+                                ->label(
+                                    'Tanggal Pesanan'
+                                )
                                 ->required(),
 
                         ])
+
                         ->columns(2),
 
                     Step::make('Detail Pesanan')
                         ->schema([
 
-                            Forms\Components\Repeater::make('detailPesanan')
+                            Forms\Components\Repeater::make(
+                                'detailPesanan'
+                            )
+
                                 ->relationship()
 
                                 ->schema([
 
-                                    Forms\Components\Select::make('id_menu')
+                                    Forms\Components\Select::make(
+                                        'id_menu'
+                                    )
+
                                         ->label('Menu')
-                                        ->relationship('menu', 'nama_menu')
+
+                                        ->relationship(
+                                            'menu',
+                                            'nama_menu'
+                                        )
+
                                         ->searchable()
+
                                         ->preload()
+
                                         ->required()
+
                                         ->reactive()
 
-                                        ->afterStateUpdated(function ($state, callable $set, callable $get) {
-
-                                            $menu = Menu::find($state);
-
-                                            if ($menu) {
-
-                                                $jumlah = (int) ($get('jumlah') ?? 1);
-
-                                                $subtotal = $menu->harga * $jumlah;
-
-                                                $set('subtotal', $subtotal);
-
-                                                $detailPesanan = $get('../../detailPesanan');
-
-                                                $total = 0;
-
-                                                if ($detailPesanan) {
-
-                                                    foreach ($detailPesanan as $item) {
-
-                                                        if (($item['id_menu'] ?? null) == $state) {
-
-                                                            $total += $subtotal;
-
-                                                        } else {
-
-                                                            $total += (int) ($item['subtotal'] ?? 0);
-                                                        }
-                                                    }
-                                                }
-
-                                                $set('../../total_harga', $total);
-                                            }
-                                        }),
-
-                                    Forms\Components\TextInput::make('jumlah')
-                                        ->label('Jumlah')
-                                        ->numeric()
-                                        ->default(1)
-                                        ->required()
                                         ->live()
 
-                                        ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                                        ->afterStateUpdated(
+                                            function (
+                                                $state,
+                                                callable $set,
+                                                callable $get
+                                            ) {
 
-                                            $menu = Menu::find($get('id_menu'));
+                                                $menu =
+                                                    Menu::find(
+                                                        $state
+                                                    );
 
-                                            if ($menu) {
+                                                if ($menu) {
 
-                                                $jumlah = (int) $state;
+                                                    $jumlah =
+                                                        (int) (
+                                                            $get(
+                                                                'jumlah'
+                                                            ) ?? 1
+                                                        );
 
-                                                $subtotal = $menu->harga * $jumlah;
+                                                    $subtotal =
+                                                        $menu->harga *
+                                                        $jumlah;
 
-                                                $set('subtotal', $subtotal);
+                                                    $set(
+                                                        'subtotal',
+                                                        $subtotal
+                                                    );
 
-                                                $detailPesanan = $get('../../detailPesanan');
+                                                    $detailPesanan =
+                                                        $get(
+                                                            '../../detailPesanan'
+                                                        );
 
-                                                $total = 0;
+                                                    $total =
+                                                        collect(
+                                                            $detailPesanan
+                                                        )->sum(
+                                                            fn(
+                                                                $item
+                                                            ) =>
+                                                            (int) (
+                                                                $item[
+                                                                    'subtotal'
+                                                                ] ??
+                                                                0
+                                                            )
+                                                        );
 
-                                                if ($detailPesanan) {
-
-                                                    foreach ($detailPesanan as $item) {
-
-                                                        if (($item['id_menu'] ?? null) == $get('id_menu')) {
-
-                                                            $total += $subtotal;
-
-                                                        } else {
-
-                                                            $total += (int) ($item['subtotal'] ?? 0);
-                                                        }
-                                                    }
+                                                    $set(
+                                                        '../../total_harga',
+                                                        $total
+                                                    );
                                                 }
-
-                                                $set('../../total_harga', $total);
                                             }
-                                        }),
+                                        ),
 
-                                    Forms\Components\TextInput::make('subtotal')
-                                        ->label('Subtotal')
+                                    Forms\Components\TextInput::make(
+                                        'jumlah'
+                                    )
+
+                                        ->label('Jumlah')
+
                                         ->numeric()
+
+                                        ->default(1)
+
+                                        ->required()
+
+                                        ->live()
+
+                                        ->afterStateUpdated(
+                                            function (
+                                                $state,
+                                                callable $set,
+                                                callable $get
+                                            ) {
+
+                                                $menu =
+                                                    Menu::find(
+                                                        $get(
+                                                            'id_menu'
+                                                        )
+                                                    );
+
+                                                if ($menu) {
+
+                                                    $jumlah =
+                                                        (int) $state;
+
+                                                    $subtotal =
+                                                        $menu->harga *
+                                                        $jumlah;
+
+                                                    $set(
+                                                        'subtotal',
+                                                        $subtotal
+                                                    );
+
+                                                    $detailPesanan =
+                                                        $get(
+                                                            '../../detailPesanan'
+                                                        );
+
+                                                    $total =
+                                                        collect(
+                                                            $detailPesanan
+                                                        )->sum(
+                                                            fn(
+                                                                $item
+                                                            ) =>
+                                                            (int) (
+                                                                $item[
+                                                                    'subtotal'
+                                                                ] ??
+                                                                0
+                                                            )
+                                                        );
+
+                                                    $set(
+                                                        '../../total_harga',
+                                                        $total
+                                                    );
+                                                }
+                                            }
+                                        ),
+
+                                    Forms\Components\TextInput::make(
+                                        'subtotal'
+                                    )
+
+                                        ->label('Subtotal')
+
+                                        ->numeric()
+
                                         ->readOnly()
+
                                         ->dehydrated(),
 
                                 ])
@@ -170,51 +264,89 @@ class PesananResource extends Resource
 
                                 ->live()
 
-                                ->addActionLabel('Tambah Menu')
+                                ->addActionLabel(
+                                    'Tambah Menu'
+                                )
 
-                                ->afterStateUpdated(function ($state, callable $set) {
+                                ->afterStateUpdated(
+                                    function (
+                                        $state,
+                                        callable $set
+                                    ) {
 
-                                    $total = 0;
+                                        $total =
+                                            collect(
+                                                $state
+                                            )->sum(
+                                                fn($item) =>
+                                                (int) (
+                                                    $item[
+                                                        'subtotal'
+                                                    ] ?? 0
+                                                )
+                                            );
 
-                                    if ($state) {
-
-                                        foreach ($state as $item) {
-
-                                            $total += (int) ($item['subtotal'] ?? 0);
-                                        }
+                                        $set(
+                                            '../../total_harga',
+                                            $total
+                                        );
                                     }
-
-                                    $set('total_harga', $total);
-                                }),
+                                ),
 
                         ]),
 
                     Step::make('Pembayaran')
                         ->schema([
 
-                            Forms\Components\TextInput::make('total_harga')
+                            Forms\Components\TextInput::make(
+                                'total_harga'
+                            )
+
                                 ->label('Total Harga')
+
                                 ->numeric()
+
                                 ->readOnly()
+
+                                ->live()
+
                                 ->dehydrated()
+
                                 ->default(0),
 
-                            Forms\Components\Select::make('status')
-                                ->label('Status Pembayaran')
+                            Forms\Components\Select::make(
+                                'status'
+                            )
+
+                                ->label(
+                                    'Status Pembayaran'
+                                )
+
                                 ->options([
-                                    'pending' => 'Pending',
-                                    'paid' => 'Paid',
-                                    'failed' => 'Failed',
+
+                                    'pending' =>
+                                        'Pending',
+
+                                    'paid' =>
+                                        'Paid',
+
+                                    'failed' =>
+                                        'Failed',
+
                                 ])
+
                                 ->default('pending')
+
                                 ->required(),
 
                         ]),
 
                 ])
+
                     ->columnSpanFull(),
 
             ])
+
             ->columns(1);
     }
 
@@ -224,63 +356,105 @@ class PesananResource extends Resource
 
             ->headerActions([
 
-                Tables\Actions\Action::make('downloadPdf')
+                Tables\Actions\Action::make(
+                    'downloadPdf'
+                )
 
                     ->label('Download PDF')
 
-                    ->icon('heroicon-o-arrow-down-tray')
+                    ->icon(
+                        'heroicon-o-arrow-down-tray'
+                    )
 
                     ->color('success')
 
                     ->action(function () {
 
-                        $pesanan = Pesanan::with([
-                            'pelanggan',
-                            'karyawan',
-                        ])->get();
+                        $pesanan =
+                            Pesanan::with([
+                                'pelanggan',
+                                'karyawan',
+                            ])->get();
 
                         $pdf = Pdf::loadView(
                             'pdf.pesanan-pdf',
                             compact('pesanan')
                         );
 
-                        return response()->streamDownload(
-                            fn () => print($pdf->output()),
-                            'laporan-pesanan.pdf'
-                        );
+                        return response()
+                            ->streamDownload(
+
+                                fn() => print(
+                                    $pdf->output()
+                                ),
+
+                                'laporan-pesanan.pdf'
+                            );
                     }),
 
             ])
 
             ->columns([
 
-                Tables\Columns\TextColumn::make('id_pesanan')
+                Tables\Columns\TextColumn::make(
+                    'id_pesanan'
+                )
+
                     ->label('ID')
+
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('pelanggan.nama_pelanggan')
+                Tables\Columns\TextColumn::make(
+                    'pelanggan.nama_pelanggan'
+                )
+
                     ->label('Pelanggan')
+
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('karyawan.nama_karyawan')
+                Tables\Columns\TextColumn::make(
+                    'karyawan.nama_karyawan'
+                )
+
                     ->label('Karyawan')
+
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('tgl_pesanan')
+                Tables\Columns\TextColumn::make(
+                    'tgl_pesanan'
+                )
+
                     ->label('Tanggal Pesanan')
+
                     ->date(),
 
-                Tables\Columns\TextColumn::make('total_harga')
+                Tables\Columns\TextColumn::make(
+                    'total_harga'
+                )
+
                     ->label('Total Harga')
+
                     ->money('IDR')
+
                     ->sortable(),
 
-                Tables\Columns\BadgeColumn::make('status')
+                Tables\Columns\BadgeColumn::make(
+                    'status'
+                )
+
                     ->label('Status')
+
                     ->colors([
-                        'warning' => 'pending',
-                        'success' => 'paid',
-                        'danger' => 'failed',
+
+                        'warning' =>
+                            'pending',
+
+                        'success' =>
+                            'paid',
+
+                        'danger' =>
+                            'failed',
+
                     ]),
 
             ])
@@ -291,23 +465,53 @@ class PesananResource extends Resource
 
                 Tables\Actions\DeleteAction::make(),
 
-                Tables\Actions\Action::make('bayar')
+                Tables\Actions\Action::make(
+                    'bayar'
+                )
+
                     ->label('Bayar')
-                    ->icon('heroicon-o-credit-card')
+
+                    ->icon(
+                        'heroicon-o-credit-card'
+                    )
+
                     ->color('success')
-                    ->url(fn ($record) => route('payment', $record->id_pesanan))
+
+                    ->url(
+                        fn($record) =>
+                        route(
+                            'payment',
+                            $record->id_pesanan
+                        )
+                    )
+
                     ->openUrlInNewTab(),
 
-                Tables\Actions\Action::make('kirimInvoice')
+                Tables\Actions\Action::make(
+                    'kirimInvoice'
+                )
+
                     ->label('Kirim Invoice')
-                    ->icon('heroicon-o-envelope')
+
+                    ->icon(
+                        'heroicon-o-envelope'
+                    )
+
                     ->color('warning')
 
-                    ->action(function ($record) {
+                    ->action(function (
+                        $record
+                    ) {
 
-                        Mail::to($record->pelanggan->email)
-                            ->send(new InvoicePesanan($record));
-
+                        Mail::to(
+                            $record
+                                ->pelanggan
+                                ->email
+                        )->send(
+                            new InvoicePesanan(
+                                $record
+                            )
+                        );
                     })
 
                     ->requiresConfirmation()
@@ -327,9 +531,18 @@ class PesananResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListPesanans::route('/'),
-            'create' => Pages\CreatePesanan::route('/create'),
-            'edit'   => Pages\EditPesanan::route('/{record}/edit'),
+
+            'index' =>
+                Pages\ListPesanans::route('/'),
+
+            'create' =>
+                Pages\CreatePesanan::route('/create'),
+
+            'edit' =>
+                Pages\EditPesanan::route(
+                    '/{record}/edit'
+                ),
+
         ];
     }
 }
