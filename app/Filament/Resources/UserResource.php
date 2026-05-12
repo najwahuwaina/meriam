@@ -36,7 +36,7 @@ class UserResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
 
     // tambahan buat grup masterdata
-    protected static ?string $navigationGroup = 'Master Data';
+    protected static ?string $navigationGroup = 'Masterdata';
 
     public static function form(Form $form): Form
     {

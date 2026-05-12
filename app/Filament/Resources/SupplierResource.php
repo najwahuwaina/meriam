@@ -27,7 +27,7 @@ class SupplierResource extends Resource
     protected static ?string $navigationLabel = 'Supplier';
 
     // tambahan buat grup masterdata
-    protected static ?string $navigationGroup = 'Masterdata';
+    protected static ?string $navigationGroup = 'Master Data';
 
     public static function canViewAny(): bool
     {

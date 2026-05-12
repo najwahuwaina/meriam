@@ -36,7 +36,7 @@ class Supplier extends Model
     }
 
     // relasi ke tabel pembelian
-    public function pembelian()
+    public function pembelianBahan()
     {
         return $this->hasMany(Pembelian::class, 'supplier_id');
     }
