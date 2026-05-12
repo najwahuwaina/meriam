@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 // tambahan
 use Illuminate\Support\Facades\DB;
-//coba
+
 class Supplier extends Model
 {
     use HasFactory;
@@ -36,7 +36,7 @@ class Supplier extends Model
     }
 
     // relasi ke tabel pembelian
-    public function pembelian()
+    public function pembelianBahan()
     {
         return $this->hasMany(Pembelian::class, 'supplier_id');
     }

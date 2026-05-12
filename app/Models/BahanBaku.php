@@ -12,7 +12,7 @@ class BahanBaku extends Model
     protected $table = 'bahan_baku';
     
     protected $fillable = [
-        'kode_bahan', 'nama_bahan', 'satuan',
+        'kode_bahan', 'nama_bahan', 'satuan', 'harga_beli', 
         'stok', 'stok_minimum', 'kategori', 'foto'
     ];
 
@@ -29,5 +29,4 @@ class BahanBaku extends Model
     {
         return $this->hasMany(PembelianBahan::class);
     }
-
 }

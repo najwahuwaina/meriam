@@ -16,4 +16,27 @@ class EditPesanan extends EditRecord
             Actions\DeleteAction::make(),
         ];
     }
+
+    protected function afterSave(): void
+    {
+        $pesanan = $this->record->load('detailPesanan');
+
+        $subtotal = $pesanan->detailPesanan->sum('subtotal');
+        $ppn = $subtotal * 0.11;
+        $total = $subtotal + $ppn;
+
+        $pesanan->update([
+            'total_harga' => $subtotal,
+        ]);
+
+        \App\Models\Pembayaran::updateOrCreate(
+            ['id_pesanan' => $pesanan->id_pesanan],
+            [
+                'tgl_bayar' => now(),
+                'subtotal' => $subtotal,
+                'ppn' => $ppn,
+                'total_bayar' => $total,
+            ]
+        );
+    }
 }

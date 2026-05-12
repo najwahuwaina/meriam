@@ -9,9 +9,6 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Filament\Tables\Actions\ExportAction;
-use Filament\Tables\Actions\ExportBulkAction;
-use App\Filament\Exports\PresensiExporter;
 
 class PresensiResource extends Resource
 {
@@ -28,9 +25,13 @@ class PresensiResource extends Resource
                     ->relationship('karyawan', 'nama_karyawan')
                     ->required()
                     ->label('Karyawan'),
-                Forms\Components\DatePicker::make('tanggal')->required(),
-                Forms\Components\TimePicker::make('jam_masuk'),
-                Forms\Components\TimePicker::make('jam_keluar'),
+                Forms\Components\DatePicker::make('tanggal')
+                    ->required()
+                    ->label('Tanggal'),
+                Forms\Components\TimePicker::make('jam_masuk')
+                    ->label('Jam Masuk'),
+                Forms\Components\TimePicker::make('jam_keluar')
+                    ->label('Jam Keluar'),
                 Forms\Components\Select::make('status')
                     ->options([
                         'Hadir' => 'Hadir',
@@ -38,7 +39,8 @@ class PresensiResource extends Resource
                         'Sakit' => 'Sakit',
                         'Alpa' => 'Alpa',
                     ])
-                    ->default('Hadir'),
+                    ->default('Hadir')
+                    ->label('Status'),
             ]);
     }
 
@@ -59,11 +61,11 @@ class PresensiResource extends Resource
                         'info' => 'Sakit',
                     ]),
             ])
-            ->headerActions([
-                ExportAction::make()->exporter(PresensiExporter::class),
+            ->filters([])
+            ->actions([
+                Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
-                ExportBulkAction::make()->exporter(PresensiExporter::class),
                 Tables\Actions\DeleteBulkAction::make(),
             ]);
     }
