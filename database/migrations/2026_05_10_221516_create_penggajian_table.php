@@ -28,6 +28,12 @@ return new class extends Migration
 
             $table->double('gaji_per_hari');
 
+            $table->double('tunjangan_transport')->default(0);
+
+            $table->double('tunjangan_makan')->default(0);
+
+            $table->double('total_tunjangan')->default(0);
+
             $table->double('total_gaji')->default(0);
 
             $table->timestamps();

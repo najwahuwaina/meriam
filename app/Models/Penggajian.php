@@ -14,16 +14,19 @@ class Penggajian extends Model
     protected $primaryKey = 'id_penggajian';
 
     protected $fillable = [
-        'id_karyawan',
-        'bulan',
-        'tahun',
-        'jumlah_hadir',
-        'jumlah_izin',
-        'jumlah_sakit',
-        'jumlah_alpa',
-        'gaji_per_hari',
-        'total_gaji',
-    ];
+    'id_karyawan',
+    'bulan',
+    'tahun',
+    'jumlah_hadir',
+    'jumlah_izin',
+    'jumlah_sakit',
+    'jumlah_alpa',
+    'gaji_per_hari',
+    'tunjangan_transport', // tambah
+    'tunjangan_makan',     // tambah
+    'total_tunjangan',     // tambah
+    'total_gaji',
+];
 
     public function karyawan()
     {

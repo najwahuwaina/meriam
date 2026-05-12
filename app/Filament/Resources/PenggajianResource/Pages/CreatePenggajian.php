@@ -12,42 +12,43 @@ class CreatePenggajian extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        // Hitung jumlah hadir
         $jumlahHadir = Presensi::where('id_karyawan', $data['id_karyawan'])
             ->whereMonth('tanggal', (int) $data['bulan'])
             ->whereYear('tanggal', (int) $data['tahun'])
             ->whereRaw('LOWER(status) = ?', ['hadir'])
             ->count();
 
-        // Hitung izin
         $jumlahIzin = Presensi::where('id_karyawan', $data['id_karyawan'])
             ->whereMonth('tanggal', (int) $data['bulan'])
             ->whereYear('tanggal', (int) $data['tahun'])
             ->whereRaw('LOWER(status) = ?', ['izin'])
             ->count();
 
-        // Hitung sakit
         $jumlahSakit = Presensi::where('id_karyawan', $data['id_karyawan'])
             ->whereMonth('tanggal', (int) $data['bulan'])
             ->whereYear('tanggal', (int) $data['tahun'])
             ->whereRaw('LOWER(status) = ?', ['sakit'])
             ->count();
 
-        // Hitung alpa
         $jumlahAlpa = Presensi::where('id_karyawan', $data['id_karyawan'])
             ->whereMonth('tanggal', (int) $data['bulan'])
             ->whereYear('tanggal', (int) $data['tahun'])
             ->whereRaw('LOWER(status) = ?', ['alpa'])
             ->count();
 
-        // Simpan hasil
         $data['jumlah_hadir'] = $jumlahHadir;
-        $data['jumlah_izin'] = $jumlahIzin;
+        $data['jumlah_izin']  = $jumlahIzin;
         $data['jumlah_sakit'] = $jumlahSakit;
-        $data['jumlah_alpa'] = $jumlahAlpa;
+        $data['jumlah_alpa']  = $jumlahAlpa;
 
-        // Hitung total gaji
-        $data['total_gaji'] = $jumlahHadir * $data['gaji_per_hari'];
+        $tunjangan_transport     = (float) ($data['tunjangan_transport'] ?? 0);
+        $tunjangan_makan         = (float) ($data['tunjangan_makan'] ?? 0);
+        $data['tunjangan_transport'] = $tunjangan_transport;
+        $data['tunjangan_makan']     = $tunjangan_makan;
+        $data['total_tunjangan']     = $tunjangan_transport + $tunjangan_makan;
+
+        $gaji_pokok         = $jumlahHadir * (float) $data['gaji_per_hari'];
+        $data['total_gaji'] = $gaji_pokok + $data['total_tunjangan'];
 
         return $data;
     }
