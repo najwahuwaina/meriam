@@ -3,26 +3,24 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\PesananResource\Pages;
-
-use App\Models\Pesanan;
-use App\Models\Menu;
-
 use App\Mail\InvoicePesanan;
+use App\Models\Menu;
+use App\Models\Pesanan;
 
-use Illuminate\Support\Facades\Mail;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 use Filament\Forms;
 use Filament\Forms\Form;
+
+use Filament\Forms\Components\Wizard;
+use Filament\Forms\Components\Wizard\Step;
 
 use Filament\Resources\Resource;
 
 use Filament\Tables;
 use Filament\Tables\Table;
 
-use Filament\Forms\Components\Wizard;
-use Filament\Forms\Components\Wizard\Step;
-
-use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Mail;
 
 class PesananResource extends Resource
 {
@@ -33,6 +31,8 @@ class PesananResource extends Resource
     protected static ?string $navigationLabel = 'Pesanan';
 
     protected static ?string $navigationGroup = 'Transaksi';
+
+    protected static ?string $maxContentWidth = 'Full';
 
     public static function form(Form $form): Form
     {
@@ -93,7 +93,26 @@ class PesananResource extends Resource
 
                                                 $set('subtotal', $subtotal);
 
-                                                $set('../../total_harga', $subtotal);
+                                                $detailPesanan = $get('../../detailPesanan');
+
+                                                $total = 0;
+
+                                                if ($detailPesanan) {
+
+                                                    foreach ($detailPesanan as $item) {
+
+                                                        if (($item['id_menu'] ?? null) == $state) {
+
+                                                            $total += $subtotal;
+
+                                                        } else {
+
+                                                            $total += (int) ($item['subtotal'] ?? 0);
+                                                        }
+                                                    }
+                                                }
+
+                                                $set('../../total_harga', $total);
                                             }
                                         }),
 
@@ -116,7 +135,26 @@ class PesananResource extends Resource
 
                                                 $set('subtotal', $subtotal);
 
-                                                $set('../../total_harga', $subtotal);
+                                                $detailPesanan = $get('../../detailPesanan');
+
+                                                $total = 0;
+
+                                                if ($detailPesanan) {
+
+                                                    foreach ($detailPesanan as $item) {
+
+                                                        if (($item['id_menu'] ?? null) == $get('id_menu')) {
+
+                                                            $total += $subtotal;
+
+                                                        } else {
+
+                                                            $total += (int) ($item['subtotal'] ?? 0);
+                                                        }
+                                                    }
+                                                }
+
+                                                $set('../../total_harga', $total);
                                             }
                                         }),
 
@@ -132,7 +170,22 @@ class PesananResource extends Resource
 
                                 ->live()
 
-                                ->addActionLabel('Tambah Menu'),
+                                ->addActionLabel('Tambah Menu')
+
+                                ->afterStateUpdated(function ($state, callable $set) {
+
+                                    $total = 0;
+
+                                    if ($state) {
+
+                                        foreach ($state as $item) {
+
+                                            $total += (int) ($item['subtotal'] ?? 0);
+                                        }
+                                    }
+
+                                    $set('total_harga', $total);
+                                }),
 
                         ]),
 
@@ -159,8 +212,10 @@ class PesananResource extends Resource
                         ]),
 
                 ])
+                    ->columnSpanFull(),
 
-            ]);
+            ])
+            ->columns(1);
     }
 
     public static function table(Table $table): Table
@@ -190,9 +245,7 @@ class PesananResource extends Resource
                         );
 
                         return response()->streamDownload(
-
                             fn () => print($pdf->output()),
-
                             'laporan-pesanan.pdf'
                         );
                     }),
@@ -227,7 +280,7 @@ class PesananResource extends Resource
                     ->colors([
                         'warning' => 'pending',
                         'success' => 'paid',
-                        'danger'  => 'failed',
+                        'danger' => 'failed',
                     ]),
 
             ])
@@ -242,7 +295,6 @@ class PesananResource extends Resource
                     ->label('Bayar')
                     ->icon('heroicon-o-credit-card')
                     ->color('success')
-
                     ->url(fn ($record) => route('payment', $record->id_pesanan))
                     ->openUrlInNewTab(),
 
@@ -275,9 +327,9 @@ class PesananResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListPesanans::route('/'),
+            'index' => Pages\ListPesanans::route('/'),
             'create' => Pages\CreatePesanan::route('/create'),
-            'edit'   => Pages\EditPesanan::route('/{record}/edit'),
+            'edit' => Pages\EditPesanan::route('/{record}/edit'),
         ];
     }
 }
