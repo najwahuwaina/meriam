@@ -41,12 +41,17 @@ class CreatePenggajian extends CreateRecord
         $data['jumlah_sakit'] = $jumlahSakit;
         $data['jumlah_alpa']  = $jumlahAlpa;
 
-        $tunjangan_transport     = (float) ($data['tunjangan_transport'] ?? 0);
-        $tunjangan_makan         = (float) ($data['tunjangan_makan'] ?? 0);
+        // Simpan nilai per hari
+        $tunjangan_transport = (float) ($data['tunjangan_transport'] ?? 0);
+        $tunjangan_makan     = (float) ($data['tunjangan_makan'] ?? 0);
+
         $data['tunjangan_transport'] = $tunjangan_transport;
         $data['tunjangan_makan']     = $tunjangan_makan;
-        $data['total_tunjangan']     = $tunjangan_transport + $tunjangan_makan;
 
+        // Total tunjangan = (transport + makan) per hari x jumlah hadir
+        $data['total_tunjangan'] = ($tunjangan_transport + $tunjangan_makan) * $jumlahHadir;
+
+        // Total gaji = gaji pokok + total tunjangan
         $gaji_pokok         = $jumlahHadir * (float) $data['gaji_per_hari'];
         $data['total_gaji'] = $gaji_pokok + $data['total_tunjangan'];
 

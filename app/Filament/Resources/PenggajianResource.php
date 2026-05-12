@@ -8,7 +8,6 @@ use App\Models\Presensi;
 
 use Barryvdh\DomPDF\Facade\Pdf;
 
-use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Forms\Components\Wizard;
 use Filament\Forms\Components\Section;
@@ -77,28 +76,28 @@ class PenggajianResource extends Resource
                     ->icon('heroicon-m-gift')
                     ->schema([
                         Section::make('Komponen Tunjangan')
-                            ->description('Isi tunjangan yang diterima karyawan pada periode ini.')
+                            ->description('Isi tunjangan per hari yang diterima karyawan.')
                             ->schema([
                                 TextInput::make('tunjangan_transport')
-                                    ->label('Tunjangan Transport')
+                                    ->label('Tunjangan Transport per Hari')
                                     ->numeric()
                                     ->default(0)
                                     ->prefix('Rp')
                                     ->live(),
 
                                 TextInput::make('tunjangan_makan')
-                                    ->label('Tunjangan Makan')
+                                    ->label('Tunjangan Makan per Hari')
                                     ->numeric()
                                     ->default(0)
                                     ->prefix('Rp')
                                     ->live(),
 
                                 Placeholder::make('preview_total_tunjangan')
-                                    ->label('Total Tunjangan')
+                                    ->label('Total Tunjangan per Hari')
                                     ->content(function ($get) {
                                         $total = ((float) $get('tunjangan_transport'))
                                                + ((float) $get('tunjangan_makan'));
-                                        return 'Rp ' . number_format($total, 0, ',', '.');
+                                        return 'Rp ' . number_format($total, 0, ',', '.') . ' / hari';
                                     })
                                     ->columnSpanFull(),
                             ])
@@ -129,26 +128,51 @@ class PenggajianResource extends Resource
 
                                 Placeholder::make('ringkasan_tunjangan_transport')
                                     ->label('Tunjangan Transport')
-                                    ->content(fn ($get) =>
-                                        'Rp ' . number_format((float) $get('tunjangan_transport'), 0, ',', '.')
-                                    ),
+                                    ->content(function ($get) {
+                                        $hadir = 0;
+                                        if ($get('id_karyawan') && $get('bulan') && $get('tahun')) {
+                                            $hadir = Presensi::where('id_karyawan', $get('id_karyawan'))
+                                                ->whereMonth('tanggal', (int) $get('bulan'))
+                                                ->whereYear('tanggal', (int) $get('tahun'))
+                                                ->whereRaw('LOWER(status) = ?', ['hadir'])
+                                                ->count();
+                                        }
+                                        $total = $hadir * ((float) $get('tunjangan_transport'));
+                                        return 'Rp ' . number_format($total, 0, ',', '.') . ' (' . $hadir . ' hari x Rp ' . number_format((float) $get('tunjangan_transport'), 0, ',', '.') . ')';
+                                    }),
 
                                 Placeholder::make('ringkasan_tunjangan_makan')
                                     ->label('Tunjangan Makan')
-                                    ->content(fn ($get) =>
-                                        'Rp ' . number_format((float) $get('tunjangan_makan'), 0, ',', '.')
-                                    ),
+                                    ->content(function ($get) {
+                                        $hadir = 0;
+                                        if ($get('id_karyawan') && $get('bulan') && $get('tahun')) {
+                                            $hadir = Presensi::where('id_karyawan', $get('id_karyawan'))
+                                                ->whereMonth('tanggal', (int) $get('bulan'))
+                                                ->whereYear('tanggal', (int) $get('tahun'))
+                                                ->whereRaw('LOWER(status) = ?', ['hadir'])
+                                                ->count();
+                                        }
+                                        $total = $hadir * ((float) $get('tunjangan_makan'));
+                                        return 'Rp ' . number_format($total, 0, ',', '.') . ' (' . $hadir . ' hari x Rp ' . number_format((float) $get('tunjangan_makan'), 0, ',', '.') . ')';
+                                    }),
 
                                 Placeholder::make('ringkasan_total_tunjangan')
                                     ->label('Total Tunjangan')
                                     ->content(function ($get) {
-                                        $total = ((float) $get('tunjangan_transport'))
-                                               + ((float) $get('tunjangan_makan'));
+                                        $hadir = 0;
+                                        if ($get('id_karyawan') && $get('bulan') && $get('tahun')) {
+                                            $hadir = Presensi::where('id_karyawan', $get('id_karyawan'))
+                                                ->whereMonth('tanggal', (int) $get('bulan'))
+                                                ->whereYear('tanggal', (int) $get('tahun'))
+                                                ->whereRaw('LOWER(status) = ?', ['hadir'])
+                                                ->count();
+                                        }
+                                        $total = $hadir * (((float) $get('tunjangan_transport')) + ((float) $get('tunjangan_makan')));
                                         return 'Rp ' . number_format($total, 0, ',', '.');
                                     }),
 
                                 Placeholder::make('ringkasan_total_gaji')
-                                    ->label('💰 Total Gaji (Gaji Pokok + Tunjangan)')
+                                    ->label('Total Gaji (Gaji Pokok + Tunjangan)')
                                     ->content(function ($get) {
                                         $hadir = 0;
                                         if ($get('id_karyawan') && $get('bulan') && $get('tahun')) {
@@ -159,8 +183,7 @@ class PenggajianResource extends Resource
                                                 ->count();
                                         }
                                         $pokok     = $hadir * ((float) $get('gaji_per_hari'));
-                                        $tunjangan = ((float) $get('tunjangan_transport'))
-                                                   + ((float) $get('tunjangan_makan'));
+                                        $tunjangan = $hadir * (((float) $get('tunjangan_transport')) + ((float) $get('tunjangan_makan')));
                                         return 'Rp ' . number_format($pokok + $tunjangan, 0, ',', '.');
                                     })
                                     ->columnSpanFull(),
@@ -200,11 +223,15 @@ class PenggajianResource extends Resource
                 Tables\Columns\TextColumn::make('jumlah_alpa')->label('Alpa'),
 
                 Tables\Columns\TextColumn::make('tunjangan_transport')
-                    ->label('T. Transport')
+                    ->label('T. Transport/Hari')
                     ->money('IDR'),
 
                 Tables\Columns\TextColumn::make('tunjangan_makan')
-                    ->label('T. Makan')
+                    ->label('T. Makan/Hari')
+                    ->money('IDR'),
+
+                Tables\Columns\TextColumn::make('total_tunjangan')
+                    ->label('Total Tunjangan')
                     ->money('IDR'),
 
                 Tables\Columns\TextColumn::make('total_gaji')
