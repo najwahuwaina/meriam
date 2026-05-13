@@ -17,6 +17,7 @@ class Pesanan extends Model
         'id_karyawan',
         'tgl_pesanan',
         'total_harga',
+         'status',
     ];
 
     // Relasi ke Pelanggan

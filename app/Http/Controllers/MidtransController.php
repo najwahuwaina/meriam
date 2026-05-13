@@ -84,7 +84,10 @@ class MidtransController extends Controller
 
         $idPesanan = $orderId[1];
 
-        $pesanan = Pesanan::find($idPesanan);
+        $pesanan = Pesanan::where(
+            'id_pesanan',
+            $idPesanan
+    )->first();
 
         if (!$pesanan) {
 
