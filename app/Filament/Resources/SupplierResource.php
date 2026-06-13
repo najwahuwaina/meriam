@@ -2,74 +2,35 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\SupplierResource\Pages;
-use App\Filament\Resources\SupplierResource\RelationManagers;
 use App\Models\Supplier;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Resources\Resource;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-
-// untuk form dan table
-use Filament\Forms\Components\TextInput;
-use Filament\Tables\Columns\TextColumn;
+use App\Filament\Resources\SupplierResource\Pages;
 
 class SupplierResource extends Resource
 {
     protected static ?string $model = Supplier::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-truck';
-
-    // merubah nama label menjadi Supplier
+    protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-check';
     protected static ?string $navigationLabel = 'Supplier';
-
-    // tambahan buat grup masterdata
-<<<<<<< HEAD
     protected static ?string $navigationGroup = 'Masterdata';
-    //push baru disini
-    
-=======
-    protected static ?string $navigationGroup = 'Master Data';
-
->>>>>>> 38381a9 (suplier masuk masdat)
-    public static function canViewAny(): bool
-    {
-        return true;
-    }
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                TextInput::make('kode_supplier')
-                    ->default(fn () => Supplier::getKodeSupplier())
-                    ->label('Kode Supplier')
-                    ->required()
-                    ->readonly(),
-
-                TextInput::make('nama_supplier')
+                Forms\Components\TextInput::make('nama_supplier')
                     ->label('Nama Supplier')
-                    ->required()
-                    ->placeholder('Masukkan nama supplier'),
+                    ->required(),
 
-                TextInput::make('alamat_supplier')
-                    ->label('Alamat Supplier')
-                    ->required()
-                    ->placeholder('Masukkan alamat supplier'),
+                Forms\Components\TextInput::make('alamat')
+                    ->label('Alamat'),
 
-                TextInput::make('no_telp')
-                    ->label('No Telepon')
-                    ->required()
-                    ->placeholder('Masukkan nomor telepon')
-                    ->numeric()
-                    ->prefix('+62')
-                    ->extraAttributes([
-                        'pattern' => '^[0-9]+$',
-                        'title' => 'Masukkan angka yang diawali dengan 0'
-                    ]),
+                Forms\Components\TextInput::make('telepon')
+                    ->label('Telepon'),
             ]);
     }
 
@@ -77,50 +38,35 @@ class SupplierResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('kode_supplier')
-                    ->label('Kode Supplier')
-                    ->searchable()
-                    ->sortable(),
-
-                TextColumn::make('nama_supplier')
+                Tables\Columns\TextColumn::make('nama_supplier')
                     ->label('Nama Supplier')
-                    ->searchable()
-                    ->sortable(),
-
-                TextColumn::make('alamat_supplier')
-                    ->label('Alamat Supplier')
+                    ->sortable()
                     ->searchable(),
 
-                TextColumn::make('no_telp')
-                    ->label('No Telepon')
-                    ->searchable(),
+                Tables\Columns\TextColumn::make('alamat')
+                    ->label('Alamat'),
+
+                Tables\Columns\TextColumn::make('telepon')
+                    ->label('Telepon'),
+
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Created At')
+                    ->dateTime(),
             ])
-            ->filters([
-                //
-            ])
+            ->filters([])
             ->actions([
-                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
+                Tables\Actions\DeleteBulkAction::make(),
             ]);
-    }
-
-    public static function getRelations(): array
-    {
-        return [
-            //
-        ];
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListSuppliers::route('/'),
+            'index' => Pages\ListSupplier::route('/'),
             'create' => Pages\CreateSupplier::route('/create'),
             'edit' => Pages\EditSupplier::route('/{record}/edit'),
         ];
