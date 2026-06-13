@@ -18,7 +18,7 @@ class AiInsightResource extends Resource
         'heroicon-o-sparkles';
 
     protected static ?string $navigationLabel =
-        'AI Insights';
+        'Analisis Penjualan AI';
 
     protected static ?string $navigationGroup =
         'Laporan';
@@ -31,15 +31,11 @@ class AiInsightResource extends Resource
                 Forms\Components\Textarea::make(
                     'hasil_analisis'
                 )
-
                     ->label(
                         'Hasil Analisis AI'
                     )
-
-                    ->rows(12)
-
+                    ->rows(15)
                     ->required()
-
                     ->columnSpanFull(),
 
             ]);
@@ -54,35 +50,26 @@ class AiInsightResource extends Resource
                 Tables\Columns\TextColumn::make(
                     'id'
                 )
-
                     ->label('ID')
-
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make(
                     'hasil_analisis'
                 )
-
                     ->label(
                         'Hasil Analisis AI'
                     )
-
-                    ->limit(100)
-
+                    ->limit(150)
                     ->wrap()
-
                     ->searchable(),
 
                 Tables\Columns\TextColumn::make(
                     'created_at'
                 )
-
                     ->label(
                         'Tanggal Analisis'
                     )
-
                     ->dateTime()
-
                     ->sortable(),
 
             ])
@@ -92,6 +79,8 @@ class AiInsightResource extends Resource
             ])
 
             ->actions([
+
+                Tables\Actions\ViewAction::make(),
 
                 Tables\Actions\EditAction::make(),
 
