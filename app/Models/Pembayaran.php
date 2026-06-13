@@ -15,10 +15,16 @@ class Pembayaran extends Model
         'tarif_ppn',
         'subtotal_stlh_ppn',
         'jumlah',
+        'order_id',
+        'snap_token',
+        'transaction_status',
     ];
 
     public function pesanan()
     {
-        return $this->belongsTo(Pesanan::class, 'id_pesanan');
+        return $this->belongsTo(
+            Pesanan::class,
+            'id_pesanan'
+        );
     }
 }
