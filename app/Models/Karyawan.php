@@ -19,5 +19,6 @@ class Karyawan extends Model
         'jabatan',
         'tanggal_lahir',
         'foto_ektp',
-    ];    
+    ];
+    
 }

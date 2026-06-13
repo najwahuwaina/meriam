@@ -22,6 +22,7 @@ use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Toggle;
 
+
 class MenuResource extends Resource
 {
     protected static ?string $model = Menu::class;
@@ -30,7 +31,7 @@ class MenuResource extends Resource
     protected static bool $shouldRegisterNavigation = true;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-
+    protected static ?string $navigationGroup = 'Master Data';
     public static function form(Form $form): Form
     {
         return $form

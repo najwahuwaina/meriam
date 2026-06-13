@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html>
-
 <head>
-
     <title>Pembayaran Midtrans</title>
 
     <script
@@ -10,76 +8,48 @@
         src="https://app.sandbox.midtrans.com/snap/snap.js"
         data-client-key="{{ config('midtrans.client_key') }}">
     </script>
-
 </head>
 
 <body>
 
     <h2>Pembayaran Pesanan</h2>
 
-    <p>
+    <h3>ID Pesanan: {{ $pesanan->id_pesanan }}</h3>
 
-        Total Bayar :
-
-        Rp {{ number_format(
-            $pesanan->total_harga,
-            0,
-            ',',
-            '.'
-        ) }}
-
-    </p>
+    <h3>Total Bayar: Rp {{ number_format($pesanan->total_harga, 0, ',', '.') }}</h3>
 
     <button id="pay-button">
-
         Bayar Sekarang
-
     </button>
 
     <script type="text/javascript">
 
-        document.getElementById(
-            'pay-button'
-        ).onclick = function () {
+        document.getElementById('pay-button').onclick = function () {
 
-            snap.pay(
-                '{{ $snapToken }}',
-                {
+            snap.pay('{{ $snapToken }}', {
 
-                    onSuccess: function(result) {
+                onSuccess: function(result) {
 
-                        alert(
-                            'Pembayaran berhasil!'
-                        );
+                    alert("Pembayaran berhasil!");
 
-                        window.location.href =
-                            '/payment-success/{{ $pesanan->id_pesanan }}';
-                    },
+                    window.location.href = "/admin/pesanans";
+                },
 
-                    onPending: function(result) {
+                onPending: function(result) {
 
-                        alert(
-                            'Menunggu pembayaran!'
-                        );
+                    alert("Menunggu pembayaran!");
+                },
 
-                        console.log(result);
-                    },
+                onError: function(result) {
 
-                    onError: function(result) {
-
-                        alert(
-                            'Pembayaran gagal!'
-                        );
-
-                        console.log(result);
-                    }
-
+                    alert("Pembayaran gagal!");
                 }
-            );
+
+            });
+
         };
 
     </script>
 
 </body>
-
 </html>

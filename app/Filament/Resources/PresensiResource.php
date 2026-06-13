@@ -1,5 +1,6 @@
 <?php
 
+// 🔹 Resource: app/Filament/Resources/PresensiResource.php
 namespace App\Filament\Resources;
 
 use App\Models\Presensi;
@@ -16,12 +17,8 @@ class PresensiResource extends Resource
     protected static ?string $model = Presensi::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-check';
-<<<<<<< HEAD
-=======
     protected static ?string $navigationGroup = 'Transaksi';
->>>>>>> 4897bcbacaea23ed3e0292787bb48900fd92faa7
     protected static ?string $navigationLabel = 'Presensi';
-    protected static ?string $navigationGroup = 'Transaksi';
 
     public static function form(Form $form): Form
     {
@@ -30,7 +27,15 @@ class PresensiResource extends Resource
                 Forms\Components\Select::make('id_karyawan')
                     ->relationship('karyawan', 'nama_karyawan')
                     ->label('Karyawan')
-                    ->required(),
+                    ->required()
+                    ->rules([
+                        function (callable $get) {
+                            return 'unique:presensi,id_karyawan,NULL,id_presensi,tanggal,' . $get('tanggal');
+                        },
+                    ])
+                    ->validationMessages([
+                        'unique' => 'Presensi untuk karyawan ini pada tanggal tersebut sudah tercatat.',
+                    ]),
 
                 Forms\Components\DatePicker::make('tanggal')
                     ->label('Tanggal')
@@ -78,15 +83,14 @@ class PresensiResource extends Resource
                 Tables\Columns\TextColumn::make('jam_masuk'),
                 Tables\Columns\TextColumn::make('jam_keluar'),
 
-                // ✅ Status dengan badge berwarna
                 Tables\Columns\TextColumn::make('status')
                     ->label('Status')
                     ->badge()
                     ->colors([
-                        'success' => 'Hadir',   // hijau
-                        'warning' => 'Izin',    // kuning
-                        'info'    => 'Sakit',   // biru
-                        'danger'  => 'Alpa',    // merah
+                        'success' => 'Hadir',
+                        'warning' => 'Izin',
+                        'info'    => 'Sakit',
+                        'danger'  => 'Alpa',
                     ]),
 
                 Tables\Columns\ImageColumn::make('surat_sakit')

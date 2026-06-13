@@ -6,17 +6,26 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
-        Schema::create('failed_import_rows', function (Blueprint $table) {
+        Schema::create('ai_insights', function (Blueprint $table) {
+
             $table->id();
-            $table->text('row_data'); // kolom untuk menyimpan data baris yang gagal
+
+            $table->longText('hasil_analisis');
+
             $table->timestamps();
         });
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
-        Schema::dropIfExists('failed_import_rows');
+        Schema::dropIfExists('ai_insights');
     }
 };

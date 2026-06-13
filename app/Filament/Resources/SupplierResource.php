@@ -16,7 +16,18 @@ class SupplierResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-check';
     protected static ?string $navigationLabel = 'Supplier';
+<<<<<<< HEAD
     protected static ?string $navigationGroup = 'Masterdata';
+=======
+
+    // tambahan buat grup masterdata
+    protected static ?string $navigationGroup = 'Master Data';
+
+    public static function canViewAny(): bool
+    {
+        return true;
+    }
+>>>>>>> d2eb4235d9082af4dca34dcd4ccf71007c933b38
 
     public static function form(Form $form): Form
     {

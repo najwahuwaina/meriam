@@ -16,6 +16,7 @@ public function up(): void
         $table->string('kode_bahan');      // contoh: BB001
         $table->string('nama_bahan');
         $table->string('satuan');          // contoh: kg, liter, pcs
+        $table->integer('harga_beli');
         $table->integer('stok');
         $table->integer('stok_minimum');   // untuk alert stok menipis
         $table->string('kategori')->nullable();

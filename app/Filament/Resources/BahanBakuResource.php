@@ -53,6 +53,12 @@ class BahanBakuResource extends Resource
                         ])
                         ->searchable(),
 
+                    Forms\Components\TextInput::make('harga_beli')
+                        ->label('Harga Beli (Rp)')
+                        ->numeric()
+                        ->required()
+                        ->prefix('Rp'),
+
                     Forms\Components\TextInput::make('stok')
                         ->label('Stok Awal')
                         ->numeric()
@@ -99,6 +105,10 @@ class BahanBakuResource extends Resource
                     ->label('Kategori')
                     ->badge(),
 
+                Tables\Columns\TextColumn::make('harga_beli')
+                    ->label('Harga Beli')
+                    ->money('IDR')
+                    ->sortable(),
 
                 Tables\Columns\TextColumn::make('stok')
                     ->label('Stok')
