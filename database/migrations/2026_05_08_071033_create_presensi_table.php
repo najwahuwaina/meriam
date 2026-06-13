@@ -1,5 +1,6 @@
 <?php
 
+// 🔹 Migration: database/migrations/xxxx_xx_xx_create_presensi_table.php
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -16,11 +17,13 @@ return new class extends Migration {
             $table->enum('status', ['Hadir','Izin','Sakit','Alpa'])->default('Hadir');
             $table->timestamps();
 
-            // Relasi ke tabel karyawan
             $table->foreign('id_karyawan')
                   ->references('id_karyawan')
                   ->on('karyawan')
                   ->onDelete('cascade');
+
+            // 🔹 Constraint unik: satu karyawan hanya sekali per tanggal
+            $table->unique(['id_karyawan', 'tanggal']);
         });
     }
 
