@@ -169,8 +169,8 @@ class PesananResource extends Resource
                                                         );
 
                                                     $set(
-                                                        '../../total_harga',
-                                                        $total
+                                                            '../../total_harga',
+                                                            $total
                                                     );
                                                 }
                                             }
@@ -238,8 +238,8 @@ class PesananResource extends Resource
                                                             )
                                                         );
 
-                                                    $set(
-                                                        '../../total_harga',
+                                                   $set(
+                                                            '../../total_harga',
                                                         $total
                                                     );
                                                 }
@@ -296,50 +296,69 @@ class PesananResource extends Resource
                         ]),
 
                     Step::make('Pembayaran')
-                        ->schema([
+    ->schema([
 
-                            Forms\Components\TextInput::make(
-                                'total_harga'
-                            )
+        Forms\Components\TextInput::make(
+    'total_harga'
+)
+    ->label('Total Harga')
+    ->numeric()
+    ->readOnly()
+    ->dehydrated(),
 
-                                ->label('Total Harga')
+        Forms\Components\Placeholder::make(
+            'total_ppn'
+        )
 
-                                ->numeric()
+            ->label(
+                'Total Setelah PPN'
+            )
 
-                                ->readOnly()
+            ->content(function ($get) {
 
-                                ->live()
+                $total =
+                    (int) (
+                        $get(
+                            'total_harga'
+                        ) ?? 0
+                    );
 
-                                ->dehydrated()
+                return 'IDR ' .
+                    number_format(
+                        $total +
+                        ($total * 11 / 100),
+                        0,
+                        ',',
+                        '.'
+                    );
+            }),
 
-                                ->default(0),
+        Forms\Components\Select::make(
+            'status'
+        )
 
-                            Forms\Components\Select::make(
-                                'status'
-                            )
+            ->label(
+                'Status Pembayaran'
+            )
 
-                                ->label(
-                                    'Status Pembayaran'
-                                )
+            ->options([
 
-                                ->options([
+                'pending' =>
+                    'Pending',
 
-                                    'pending' =>
-                                        'Pending',
+                'paid' =>
+                    'Paid',
 
-                                    'paid' =>
-                                        'Paid',
+                'failed' =>
+                    'Failed',
 
-                                    'failed' =>
-                                        'Failed',
+            ])
 
-                                ])
+            ->default('pending')
 
-                                ->default('pending')
+            ->required(),
 
-                                ->required(),
-
-                        ]),
+    ]),
 
                 ])
 
@@ -429,10 +448,12 @@ class PesananResource extends Resource
                     ->date(),
 
                 Tables\Columns\TextColumn::make(
-                    'total_harga'
+                    'total_setelah_ppn'
                 )
 
-                    ->label('Total Harga')
+                    ->label(
+                        'Total Setelah PPN'
+                    )
 
                     ->money('IDR')
 

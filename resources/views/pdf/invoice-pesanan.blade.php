@@ -127,15 +127,46 @@
 
             @endforeach
 
-            <tr class="total">
+            {{-- Subtotal --}}
+            <tr>
 
                 <td colspan="3" class="text-right">
-                    Total
+                    Subtotal
                 </td>
 
                 <td class="text-right">
 
                     Rp {{ number_format($pesanan->total_harga,0,',','.') }}
+
+                </td>
+
+            </tr>
+
+            {{-- PPN --}}
+            <tr>
+
+                <td colspan="3" class="text-right">
+                    PPN 11%
+                </td>
+
+                <td class="text-right">
+
+                    Rp {{ number_format($pesanan->total_harga * 11 / 100,0,',','.') }}
+
+                </td>
+
+            </tr>
+
+            {{-- Total Setelah PPN --}}
+            <tr class="total">
+
+                <td colspan="3" class="text-right">
+                    Total Setelah PPN
+                </td>
+
+                <td class="text-right">
+
+                    Rp {{ number_format($pesanan->total_setelah_ppn,0,',','.') }}
 
                 </td>
 

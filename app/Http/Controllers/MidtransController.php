@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 
 use App\Models\Pesanan;
+use App\Models\Pembayaran;
 
 use Midtrans\Config;
 use Midtrans\Snap;
@@ -16,9 +17,11 @@ class MidtransController extends Controller
         $pesanan = Pesanan::with('pelanggan')
             ->findOrFail($id);
 
-        Config::$serverKey = config('midtrans.server_key');
+        Config::$serverKey =
+            config('midtrans.server_key');
 
-        Config::$isProduction = config('midtrans.is_production');
+        Config::$isProduction =
+            config('midtrans.is_production');
 
         Config::$isSanitized = true;
 
@@ -28,22 +31,28 @@ class MidtransController extends Controller
             'status' => 'pending'
         ]);
 
+        $orderId = 'ORDER-' .
+            $pesanan->id_pesanan .
+            '-' .
+            time();
+
         $params = [
 
             'transaction_details' => [
 
-                'order_id' => 'ORDER-' .
-                    $pesanan->id_pesanan .
-                    '-' .
-                    time(),
+                'order_id' => $orderId,
 
-                'gross_amount' => $pesanan->total_harga,
+                'gross_amount' =>
+                    $pesanan->total_setelah_ppn,
 
             ],
 
             'customer_details' => [
 
-                'first_name' => $pesanan->pelanggan->nama_pelanggan,
+                'first_name' =>
+                    $pesanan
+                        ->pelanggan
+                        ->nama_pelanggan,
 
             ],
 
@@ -62,7 +71,35 @@ class MidtransController extends Controller
 
         ];
 
-        $snapToken = Snap::getSnapToken($params);
+        $snapToken =
+            Snap::getSnapToken($params);
+
+        Pembayaran::create([
+
+            'id_pesanan' =>
+                $pesanan->id_pesanan,
+
+            'tgl_bayar' => now(),
+
+            'subtotal' =>
+                $pesanan->total_harga,
+
+            'tarif_ppn' => 11,
+
+            'subtotal_stlh_ppn' =>
+                $pesanan->total_setelah_ppn,
+
+            'jumlah' =>
+                $pesanan->total_setelah_ppn,
+
+            'order_id' => $orderId,
+
+            'snap_token' => $snapToken,
+
+            'transaction_status' =>
+                'pending',
+
+        ]);
 
         return view(
             'midtrans.payment',
@@ -80,59 +117,104 @@ class MidtransController extends Controller
         $transactionStatus =
             $request->transaction_status;
 
-        $orderId = explode('-', $orderId);
+        $explodeOrderId =
+            explode('-', $orderId);
 
-        $idPesanan = $orderId[1];
+        $idPesanan =
+            $explodeOrderId[1];
 
         $pesanan = Pesanan::where(
             'id_pesanan',
             $idPesanan
-    )->first();
+        )->first();
 
         if (!$pesanan) {
 
             return response()->json([
-                'message' => 'Pesanan tidak ditemukan'
+                'message' =>
+                    'Pesanan tidak ditemukan'
             ]);
         }
 
-        if ($transactionStatus == 'settlement') {
+        if (
+            $transactionStatus ==
+            'settlement'
+        ) {
 
             $pesanan->update([
                 'status' => 'paid'
             ]);
-        }
 
-        else if ($transactionStatus == 'pending') {
+            Pembayaran::where(
+                'id_pesanan',
+                $idPesanan
+            )->latest()->first()?->update([
 
-            $pesanan->update([
-                'status' => 'pending'
+                'transaction_status' =>
+                    'settlement'
+
             ]);
         }
 
         else if (
-            $transactionStatus == 'expire' ||
-            $transactionStatus == 'cancel'
+            $transactionStatus ==
+            'pending'
+        ) {
+
+            $pesanan->update([
+                'status' => 'pending'
+            ]);
+
+            Pembayaran::where(
+                'id_pesanan',
+                $idPesanan
+            )->latest()->first()?->update([
+
+                'transaction_status' =>
+                    'pending'
+
+            ]);
+        }
+
+        else if (
+            $transactionStatus ==
+            'expire' ||
+            $transactionStatus ==
+            'cancel'
         ) {
 
             $pesanan->update([
                 'status' => 'failed'
             ]);
+
+            Pembayaran::where(
+                'id_pesanan',
+                $idPesanan
+            )->latest()->first()?->update([
+
+                'transaction_status' =>
+                    'failed'
+
+            ]);
         }
 
         return response()->json([
-            'message' => 'Notification berhasil'
+            'message' =>
+                'Notification berhasil'
         ]);
     }
 
     public function paymentSuccess($id)
     {
-        $pesanan = Pesanan::findOrFail($id);
+        $pesanan =
+            Pesanan::findOrFail($id);
 
         $pesanan->update([
             'status' => 'paid'
         ]);
 
-        return redirect('/admin/pesanans');
+        return redirect(
+            '/admin/pesanans'
+        );
     }
 }
