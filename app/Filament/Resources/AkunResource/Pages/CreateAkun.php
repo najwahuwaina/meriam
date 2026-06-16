@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\AkunResource\Pages;
 
 use App\Filament\Resources\AkunResource;
-use Filament\Actions;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateAkun extends CreateRecord
@@ -18,7 +18,8 @@ class CreateAkun extends CreateRecord
     protected function afterCreate(): void
     {
         Notification::make()
-            ->title('Data akun berhasil ditambahkan')
+            ->title('Berhasil')
+            ->body('Data akun berhasil ditambahkan.')
             ->success()
             ->send();
     }

@@ -216,11 +216,28 @@ class PenggajianResource extends Resource
                     })
                     ->label('Bulan'),
 
-                Tables\Columns\TextColumn::make('tahun')->label('Tahun'),
-                Tables\Columns\TextColumn::make('jumlah_hadir')->label('Hadir'),
-                Tables\Columns\TextColumn::make('jumlah_izin')->label('Izin'),
-                Tables\Columns\TextColumn::make('jumlah_sakit')->label('Sakit'),
-                Tables\Columns\TextColumn::make('jumlah_alpa')->label('Alpa'),
+                Tables\Columns\TextColumn::make('jumlah_hadir')
+                    ->label('Hadir')
+                    ->badge()
+                    ->color('success'),         // Hijau
+
+                Tables\Columns\TextColumn::make('jumlah_izin')
+                    ->label('Izin')
+                    ->badge()
+                    ->color('info'),            // Biru
+
+                Tables\Columns\TextColumn::make('jumlah_sakit')
+                    ->label('Sakit')
+                    ->badge()
+                    ->color('warning'),         // Kuning
+
+                Tables\Columns\TextColumn::make('jumlah_alpa')
+                    ->label('Alpa')
+                    ->badge()
+                    ->color('danger'),          // Merah
+                Tables\Columns\TextColumn::make('gaji_per_hari')
+                    ->label('Gaji/Hari')
+                    ->money('IDR'),
 
                 Tables\Columns\TextColumn::make('tunjangan_transport')
                     ->label('T. Transport/Hari')

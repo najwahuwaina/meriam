@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\PenggajianResource\Pages;
 
+use App\Models\Jurnal;
+use App\Models\JurnalDetail;
 use App\Filament\Resources\PenggajianResource;
 use App\Models\Presensi;
 use Filament\Resources\Pages\CreateRecord;
