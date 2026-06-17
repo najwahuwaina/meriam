@@ -16,11 +16,15 @@ class JurnalDetail extends Model
 
     public function jurnal()
     {
-        return $this->belongsTo(Jurnal::class);
+        return $this->belongsTo(Jurnal::class, 'jurnal_id');
     }
 
     public function akun()
     {
-        return $this->belongsTo(Akun::class);
+        return $this->belongsTo(
+            Akun::class,
+            'akun',
+            'kode_akun'
+        );
     }
 }
