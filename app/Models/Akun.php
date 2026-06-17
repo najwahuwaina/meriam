@@ -23,9 +23,12 @@ class Akun extends Model
         'header_akun',
     ];
 
-    // Relasi ke jurnal detail
     public function jurnalDetails()
     {
-        return $this->hasMany(JurnalDetail::class, 'kode_akun', 'kode_akun');
+        return $this->hasMany(
+            JurnalDetail::class,
+            'akun',
+            'kode_akun'
+        );
     }
-}
+} 

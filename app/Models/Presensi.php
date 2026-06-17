@@ -27,4 +27,4 @@ class Presensi extends Model
     {
         return $this->belongsTo(Karyawan::class, 'id_karyawan');
     }
-}
+} 
