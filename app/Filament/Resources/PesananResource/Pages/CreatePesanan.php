@@ -24,7 +24,7 @@ class CreatePesanan extends CreateRecord
         // Debit Kas
         JurnalDetail::create([
             'jurnal_id' => $jurnal->id,
-            'akun' => 'Kas',
+            'akun' => '1110',
             'debit' => $pesanan->total_harga,
             'kredit' => 0,
         ]);
@@ -32,7 +32,7 @@ class CreatePesanan extends CreateRecord
         // Kredit Pendapatan
         JurnalDetail::create([
             'jurnal_id' => $jurnal->id,
-            'akun' => 'Pendapatan Penjualan',
+            'akun' => '4110',
             'debit' => 0,
             'kredit' => $pesanan->total_harga,
         ]);

@@ -39,15 +39,27 @@ class AiInsightResource extends Resource
         return $form
             ->schema([
 
-                Forms\Components\Textarea::make(
-                    'hasil_analisis'
-                )
-                    ->label(
-                        '📊 Hasil Analisis AI'
-                    )
-                    ->rows(25)
-                    ->readOnly()
-                    ->columnSpanFull(),
+                Forms\Components\Section::make('Hasil Analisis')
+                    ->description('Ringkasan analisis penjualan yang dihasilkan AI berdasarkan data pesanan.')
+                    ->icon('heroicon-o-sparkles')
+                    ->schema([
+
+                        Forms\Components\Placeholder::make('created_at')
+                            ->label('Tanggal Analisis')
+                            ->content(fn (?AiInsight $record): string => $record
+                                ? $record->created_at->translatedFormat('d F Y, H:i')
+                                : '-'),
+
+                        Forms\Components\Textarea::make('hasil_analisis_bersih')
+                            ->label('Isi Analisis')
+                            ->rows(22)
+                            ->readOnly()
+                            ->dehydrated(false)
+                            ->formatStateUsing(fn (?AiInsight $record): string => $record?->hasil_analisis_bersih ?? '')
+                            ->columnSpanFull()
+                            ->extraInputAttributes(['style' => 'font-family: ui-sans-serif, system-ui; line-height: 1.6;']),
+
+                    ]),
 
             ]);
     }
@@ -58,28 +70,29 @@ class AiInsightResource extends Resource
 
             ->columns([
 
-                Tables\Columns\TextColumn::make(
-                    'hasil_analisis'
-                )
-                    ->label(
-                        '📊 Hasil Analisis AI'
-                    )
-                    ->limit(200)
+                Tables\Columns\TextColumn::make('ringkasan_analisis')
+                    ->label('Hasil Analisis AI')
+                    ->icon('heroicon-o-chart-bar')
+                    ->iconColor('primary')
                     ->wrap()
-                    ->searchable(),
+                    ->searchable(query: function ($query, string $search) {
+                        $query->where('hasil_analisis', 'like', "%{$search}%");
+                    })
+                    ->description(fn (AiInsight $record): string => 'Klik "Lihat" untuk detail lengkap')
+                    ->weight('medium'),
 
-                Tables\Columns\TextColumn::make(
-                    'created_at'
-                )
-                    ->label(
-                        '📅 Tanggal Analisis'
-                    )
-                    ->dateTime('d F Y H:i')
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Tanggal Analisis')
+                    ->icon('heroicon-o-calendar-days')
+                    ->dateTime('d M Y, H:i')
                     ->badge()
                     ->color('success')
-                    ->sortable(),
+                    ->sortable()
+                    ->alignCenter(),
 
             ])
+
+            ->defaultSort('created_at', 'desc')
 
             ->filters([
                 //
@@ -88,11 +101,13 @@ class AiInsightResource extends Resource
             ->actions([
 
                 Tables\Actions\ViewAction::make()
-            ->slideOver()
-            ->modalHeading('📊 Detail Analisis Penjualan AI')
-            ->modalWidth('7xl'),
+                    ->label('Lihat')
+                    ->slideOver()
+                    ->modalHeading('📊 Detail Analisis Penjualan AI')
+                    ->modalWidth('4xl'),
 
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\DeleteAction::make()
+                    ->label('Hapus'),
 
             ])
 
@@ -104,7 +119,11 @@ class AiInsightResource extends Resource
 
                 ]),
 
-            ]);
+            ])
+
+            ->emptyStateHeading('Belum ada hasil analisis')
+            ->emptyStateDescription('Analisis AI akan muncul di sini setelah dijalankan.')
+            ->emptyStateIcon('heroicon-o-sparkles');
     }
 
     public static function getRelations(): array

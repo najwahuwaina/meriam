@@ -6,6 +6,7 @@ use App\Filament\Resources\PesananResource;
 use App\Models\Pesanan;
 use App\Models\AiInsight;
 use Filament\Actions;
+use Filament\Forms;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Support\Facades\Http;
@@ -28,19 +29,66 @@ class ListPesanans extends ListRecords
 
                 ->color('success')
 
-                ->requiresConfirmation()
+                ->modalHeading('🤖 Analisis Penjualan AI')
 
-                ->action(function () {
+->modalDescription(
+    'Pilih periode penjualan yang akan dianalisis menggunakan Gemini AI.'
+)
 
-                    $jumlahPesanan = Pesanan::count();
+->form([
 
-                    $totalPendapatan = Pesanan::sum('total_harga');
+    Forms\Components\Section::make(
+        '📅 Pilih Periode Analisis'
+    )
+        ->description(
+            'Pilih rentang tanggal yang ingin dianalisis oleh AI.'
+        )
+        ->schema([
+
+            Forms\Components\DatePicker::make(
+                'tanggal_awal'
+            )
+                ->label('📅 Tanggal Awal')
+                ->required(),
+
+            Forms\Components\DatePicker::make(
+                'tanggal_akhir'
+            )
+                ->label('📅 Tanggal Akhir')
+                ->required(),
+
+        ])
+        ->columns(2),
+
+])
+
+            ->action(function (array $data) {
+
+                    $jumlahPesanan = Pesanan::whereBetween(
+                        'tgl_pesanan',
+                    [
+                         $data['tanggal_awal'],
+                        $data['tanggal_akhir']
+                    ]
+                    )->count();
+
+                    $totalPendapatan = Pesanan::whereBetween(
+                        'tgl_pesanan',
+                    [
+                         $data['tanggal_awal'],
+                        $data['tanggal_akhir']
+                    ]
+                    )->sum('total_harga');
 
                     $prompt = "
 
                         Anda adalah analis bisnis profesional untuk restoran ayam geprek.
 
-                        Data Penjualan:
+                        Periode Analisis:
+
+                        {$data['tanggal_awal']}
+                        sampai
+                        {$data['tanggal_akhir']}
 
                         Jumlah Pesanan:
                         {$jumlahPesanan}
