@@ -69,7 +69,7 @@ class JurnalPdfController extends Controller
             'periode'   => 'Per ' . now()->format('d/m/Y'),
             'jurnals'   => $jurnals,
         ])->setPaper('a4', 'portrait');
-
+        //biarkan landscape untuk laporan, portrait untuk transaksi detail
         return $pdf->download('jurnal-transaksi.pdf');
     }
 }
