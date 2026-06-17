@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Mail;
 
 use App\Http\Controllers\MidtransController;
 use App\Http\Controllers\PembelianBahanPDFController;
+use App\Http\Controllers\JurnalPdfController;
 
 use App\Mail\TesMail;
 
@@ -47,4 +48,9 @@ Route::get('/test-mail', function () {
 
     return 'Email berhasil dikirim';
 
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/jurnal/pdf/laporan', [JurnalPdfController::class, 'laporanPdf'])->name('jurnal.pdf.laporan');
+    Route::get('/jurnal/pdf/transaksi', [JurnalPdfController::class, 'transaksiPdf'])->name('jurnal.pdf.transaksi');
 });

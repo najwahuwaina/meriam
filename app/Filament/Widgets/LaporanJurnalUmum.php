@@ -3,87 +3,57 @@
 namespace App\Filament\Widgets;
 
 use App\Models\JurnalDetail;
-use Filament\Forms\Components\DatePicker;
-use Filament\Tables;
-use Filament\Tables\Table;
-use Filament\Widgets\TableWidget;
+use Filament\Widgets\Widget;
 
-class LaporanJurnalUmum extends TableWidget
+class LaporanJurnalUmum extends Widget
 {
-    protected static ?string $heading = 'Laporan Jurnal Umum';
+    protected static string $view = 'filament.widgets.laporan-jurnal-umum';
+    protected int | string | array $columnSpan = 'full';
 
-    public function table(Table $table): Table
+    public string $periode = '';
+
+    public function mount(): void
     {
-        return $table
-            ->query(
-                JurnalDetail::query()
-                    ->with('jurnal')
-            )
+        $this->periode = now()->format('Y-m');
+    }
 
-            ->columns([
+    public function filter(): void
+    {
+        // trigger re-render otomatis
+    }
 
-                Tables\Columns\TextColumn::make('jurnal.tanggal')
-                    ->label('Tanggal'),
+    public function getRows(): \Illuminate\Support\Collection
+    {
+        [$tahun, $bulan] = explode('-', $this->periode);
 
-                Tables\Columns\TextColumn::make('jurnal.no_bukti')
-                    ->label('No Bukti'),
-
-                Tables\Columns\TextColumn::make('jurnal.keterangan')
-                    ->label('Keterangan'),
-
-                Tables\Columns\TextColumn::make('akun'),
-
-                Tables\Columns\TextColumn::make('debit')
-                    ->money('IDR'),
-
-                Tables\Columns\TextColumn::make('kredit')
-                    ->money('IDR'),
-
+        return JurnalDetail::query()
+            ->join('jurnals', 'jurnal_details.jurnal_id', '=', 'jurnals.id')
+            ->join('akun', 'jurnal_details.akun', '=', 'akun.kode_akun')
+            ->whereYear('jurnals.tanggal', $tahun)
+            ->whereMonth('jurnals.tanggal', $bulan)
+            ->select([
+                'jurnals.id as jurnal_id',
+                'jurnals.tanggal',
+                'akun.kode_akun',
+                'akun.nama_akun',
+                'jurnals.no_bukti as reff',
+                'jurnal_details.debit',
+                'jurnal_details.kredit',
             ])
+            ->orderBy('jurnals.tanggal')
+            ->orderBy('jurnals.id')
+            ->get();
+    }
 
-            ->filters([
-
-                Tables\Filters\Filter::make('tanggal')
-                    ->form([
-
-                        DatePicker::make('dari'),
-
-                        DatePicker::make('sampai'),
-
-                    ])
-
-                    ->query(function ($query, array $data) {
-
-                        return $query
-                            ->when(
-                                $data['dari'],
-                                fn ($q) =>
-                                $q->whereHas(
-                                    'jurnal',
-                                    fn ($x) =>
-                                    $x->whereDate(
-                                        'tanggal',
-                                        '>=',
-                                        $data['dari']
-                                    )
-                                )
-                            )
-
-                            ->when(
-                                $data['sampai'],
-                                fn ($q) =>
-                                $q->whereHas(
-                                    'jurnal',
-                                    fn ($x) =>
-                                    $x->whereDate(
-                                        'tanggal',
-                                        '<=',
-                                        $data['sampai']
-                                    )
-                                )
-                            );
-                    })
-
-            ]);
+    public function getNamaBulan(): string
+    {
+        $bulanId = [
+            '01' => 'Januari', '02' => 'Februari', '03' => 'Maret',
+            '04' => 'April',   '05' => 'Mei',       '06' => 'Juni',
+            '07' => 'Juli',    '08' => 'Agustus',   '09' => 'September',
+            '10' => 'Oktober', '11' => 'November',  '12' => 'Desember',
+        ];
+        [$tahun, $bulan] = explode('-', $this->periode);
+        return ($bulanId[$bulan] ?? '') . ' ' . $tahun;
     }
 }
