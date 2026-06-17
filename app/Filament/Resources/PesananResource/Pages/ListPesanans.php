@@ -38,19 +38,42 @@ class ListPesanans extends ListRecords
 
                     $prompt = "
 
-                    Sistem penjualan ayam geprek.
+                        Anda adalah analis bisnis profesional untuk restoran ayam geprek.
 
-                    Jumlah pesanan:
-                    {$jumlahPesanan}
+                        Data Penjualan:
 
-                    Total pendapatan:
-                    Rp {$totalPendapatan}
+                        Jumlah Pesanan:
+                        {$jumlahPesanan}
 
-                    Buat analisis bisnis singkat.
-                    Sebutkan kondisi penjualan.
-                    Berikan 3 rekomendasi untuk meningkatkan penjualan.
+                        Total Pendapatan:
+                        Rp {$totalPendapatan}
 
-                    ";
+                        Buat laporan yang rapi dan mudah dibaca dengan format berikut:
+
+                        📊 ANALISIS PENJUALAN AI
+
+                        📌 Ringkasan
+                        (Jelaskan kondisi penjualan secara singkat)
+
+                        📈 Kondisi Penjualan
+                        (Jelaskan kondisi penjualan saat ini berdasarkan data)
+
+                        💡 Rekomendasi
+                        1. ...
+                        2. ...
+                        3. ...
+
+                        ✅ Kesimpulan
+                        (Berikan kesimpulan singkat)
+
+                        Gunakan bahasa Indonesia yang formal dan profesional.
+
+                        Jangan gunakan markdown seperti:
+                        ###, **, ---, atau simbol teknis lainnya.
+
+                        Buat hasil terlihat seperti laporan bisnis yang siap dibaca pemilik usaha.
+
+                        ";
 
                     $apiKey = env('GEMINI_API_KEY');
 
@@ -75,7 +98,7 @@ class ListPesanans extends ListRecords
 
                         Notification::make()
                             ->title('Gagal menghubungi Gemini AI')
-                            ->body(json_encode($data))
+                            ->body('Gemini AI sedang sibuk. Silakan coba lagi beberapa menit.')
                             ->danger()
                             ->send();
 

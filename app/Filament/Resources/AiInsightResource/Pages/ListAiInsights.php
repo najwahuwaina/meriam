@@ -7,7 +7,8 @@ use Filament\Resources\Pages\ListRecords;
 
 class ListAiInsights extends ListRecords
 {
-    protected static string $resource = AiInsightResource::class;
+    protected static string $resource =
+        AiInsightResource::class;
 
     protected function getHeaderActions(): array
     {

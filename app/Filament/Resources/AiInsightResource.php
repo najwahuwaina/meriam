@@ -23,6 +23,17 @@ class AiInsightResource extends Resource
     protected static ?string $navigationGroup =
         'Laporan';
 
+    protected static ?string $modelLabel =
+        'Analisis AI';
+
+    protected static ?string $pluralModelLabel =
+        'Riwayat Analisis AI';
+
+    public static function getNavigationBadge(): ?string
+    {
+        return (string) AiInsight::count();
+    }
+
     public static function form(Form $form): Form
     {
         return $form
@@ -32,10 +43,10 @@ class AiInsightResource extends Resource
                     'hasil_analisis'
                 )
                     ->label(
-                        'Hasil Analisis AI'
+                        '📊 Hasil Analisis AI'
                     )
-                    ->rows(15)
-                    ->required()
+                    ->rows(25)
+                    ->readOnly()
                     ->columnSpanFull(),
 
             ]);
@@ -48,18 +59,12 @@ class AiInsightResource extends Resource
             ->columns([
 
                 Tables\Columns\TextColumn::make(
-                    'id'
-                )
-                    ->label('ID')
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make(
                     'hasil_analisis'
                 )
                     ->label(
-                        'Hasil Analisis AI'
+                        '📊 Hasil Analisis AI'
                     )
-                    ->limit(150)
+                    ->limit(200)
                     ->wrap()
                     ->searchable(),
 
@@ -67,9 +72,11 @@ class AiInsightResource extends Resource
                     'created_at'
                 )
                     ->label(
-                        'Tanggal Analisis'
+                        '📅 Tanggal Analisis'
                     )
-                    ->dateTime()
+                    ->dateTime('d F Y H:i')
+                    ->badge()
+                    ->color('success')
                     ->sortable(),
 
             ])
@@ -80,9 +87,10 @@ class AiInsightResource extends Resource
 
             ->actions([
 
-                Tables\Actions\ViewAction::make(),
-
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\ViewAction::make()
+            ->slideOver()
+            ->modalHeading('📊 Detail Analisis Penjualan AI')
+            ->modalWidth('7xl'),
 
                 Tables\Actions\DeleteAction::make(),
 
