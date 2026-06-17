@@ -38,8 +38,15 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-                Widgets\AccountWidget::class,
-                Widgets\FilamentInfoWidget::class,
+                \App\Filament\Widgets\DashboardStats::class,
+                \App\Filament\Widgets\MenuTerlarisChart::class,  
+                \App\Filament\Widgets\KomposisiPenjualanChart::class,
+
+    \App\Filament\Widgets\StokMenipisTable::class,
+    \App\Filament\Widgets\PembelianTerakhirTable::class,
+
+    \App\Filament\Widgets\PresensiKaryawanTable::class,
+    \App\Filament\Widgets\PesananTerbaruTable::class,       
             ])
             ->middleware([
                 EncryptCookies::class,
