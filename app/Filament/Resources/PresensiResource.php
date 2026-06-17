@@ -1,18 +1,21 @@
 <?php
 
+// 🔹 Resource: app/Filament/Resources/PresensiResource.php
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\PresensiResource\Pages;
 use App\Models\Presensi;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Resources\Resource;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
+use App\Filament\Resources\PresensiResource\Pages;
+use App\Filament\Exports\PresensiExporter;
 
 class PresensiResource extends Resource
 {
     protected static ?string $model = Presensi::class;
+
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-check';
     protected static ?string $navigationGroup = 'Transaksi';
     protected static ?string $navigationLabel = 'Presensi';
@@ -23,16 +26,31 @@ class PresensiResource extends Resource
             ->schema([
                 Forms\Components\Select::make('id_karyawan')
                     ->relationship('karyawan', 'nama_karyawan')
+                    ->label('Karyawan')
                     ->required()
-                    ->label('Karyawan'),
+                    ->rules([
+                        function (callable $get) {
+                            return 'unique:presensi,id_karyawan,NULL,id_presensi,tanggal,' . $get('tanggal');
+                        },
+                    ])
+                    ->validationMessages([
+                        'unique' => 'Presensi untuk karyawan ini pada tanggal tersebut sudah tercatat.',
+                    ]),
+
                 Forms\Components\DatePicker::make('tanggal')
-                    ->required()
-                    ->label('Tanggal'),
+                    ->label('Tanggal')
+                    ->required(),
+
                 Forms\Components\TimePicker::make('jam_masuk')
-                    ->label('Jam Masuk'),
+                    ->label('Jam Masuk')
+                    ->required(),
+
                 Forms\Components\TimePicker::make('jam_keluar')
-                    ->label('Jam Keluar'),
+                    ->label('Jam Keluar')
+                    ->required(),
+
                 Forms\Components\Select::make('status')
+                    ->label('Status')
                     ->options([
                         'Hadir' => 'Hadir',
                         'Izin' => 'Izin',
@@ -40,7 +58,15 @@ class PresensiResource extends Resource
                         'Alpa' => 'Alpa',
                     ])
                     ->default('Hadir')
-                    ->label('Status'),
+                    ->required(),
+
+                Forms\Components\FileUpload::make('surat_sakit')
+                    ->label('Foto Surat Sakit')
+                    ->image()
+                    ->directory('surat_sakit')
+                    ->rules('mimes:jpg,png,pdf')
+                    ->visible(fn (callable $get) => $get('status') === 'Sakit')
+                    ->required(fn (callable $get) => $get('status') === 'Sakit'),
             ]);
     }
 
@@ -48,22 +74,35 @@ class PresensiResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('id_presensi')->sortable(),
-                Tables\Columns\TextColumn::make('karyawan.nama_karyawan')->label('Karyawan')->searchable(),
+                Tables\Columns\TextColumn::make('karyawan.nama_karyawan')
+                    ->label('Karyawan')
+                    ->sortable()
+                    ->searchable(),
+
                 Tables\Columns\TextColumn::make('tanggal')->date(),
                 Tables\Columns\TextColumn::make('jam_masuk'),
                 Tables\Columns\TextColumn::make('jam_keluar'),
-                Tables\Columns\BadgeColumn::make('status')
+
+                Tables\Columns\TextColumn::make('status')
+                    ->label('Status')
+                    ->badge()
                     ->colors([
                         'success' => 'Hadir',
                         'warning' => 'Izin',
-                        'danger' => 'Alpa',
-                        'info' => 'Sakit',
+                        'info'    => 'Sakit',
+                        'danger'  => 'Alpa',
                     ]),
+
+                Tables\Columns\ImageColumn::make('surat_sakit')
+                    ->label('Surat Sakit')
+                    ->visible(fn ($record) => $record?->status === 'Sakit'),
+
+                Tables\Columns\TextColumn::make('created_at')->dateTime(),
             ])
             ->filters([])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
@@ -73,9 +112,16 @@ class PresensiResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListPresensis::route('/'),
+            'index' => Pages\ListPresensi::route('/'),
             'create' => Pages\CreatePresensi::route('/create'),
             'edit' => Pages\EditPresensi::route('/{record}/edit'),
+        ];
+    }
+
+    public static function getExporters(): array
+    {
+        return [
+            PresensiExporter::class,
         ];
     }
 }

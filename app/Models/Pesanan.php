@@ -10,6 +10,7 @@ class Pesanan extends Model
     use HasFactory;
 
     protected $table = 'pesanan';
+
     protected $primaryKey = 'id_pesanan';
 
     protected $fillable = [
@@ -17,29 +18,49 @@ class Pesanan extends Model
         'id_karyawan',
         'tgl_pesanan',
         'total_harga',
+        'status',
     ];
 
     // Relasi ke Pelanggan
     public function pelanggan()
     {
-        return $this->belongsTo(Pelanggan::class, 'id_pelanggan');
+        return $this->belongsTo(
+            Pelanggan::class,
+            'id_pelanggan'
+        );
     }
 
     // Relasi ke Karyawan
     public function karyawan()
     {
-        return $this->belongsTo(Karyawan::class, 'id_karyawan');
+        return $this->belongsTo(
+            Karyawan::class,
+            'id_karyawan'
+        );
     }
 
     // Relasi ke Detail Pesanan
     public function detailPesanan()
     {
-        return $this->hasMany(DetailPesanan::class, 'id_pesanan');
+        return $this->hasMany(
+            DetailPesanan::class,
+            'id_pesanan'
+        );
     }
 
     // Relasi ke Pembayaran
     public function pembayaran()
     {
-        return $this->hasOne(Pembayaran::class, 'id_pesanan');
+        return $this->hasOne(
+            Pembayaran::class,
+            'id_pesanan'
+        );
+    }
+
+    // Total setelah PPN 11%
+    public function getTotalSetelahPpnAttribute()
+    {
+        return $this->total_harga +
+            ($this->total_harga * 11 / 100);
     }
 }

@@ -18,6 +18,7 @@ class PelangganResource extends Resource
     protected static ?string $model = Pelanggan::class;
     protected static ?string $navigationLabel = 'Pelanggan';
     protected static ?int $navigationSort = 2;
+    protected static ?string $navigationGroup = 'Master Data';
     protected static bool $shouldRegisterNavigation = true;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
@@ -37,6 +38,10 @@ class PelangganResource extends Resource
     Forms\Components\Textarea::make('alamat')
         ->label('Alamat')
         ->required(),
+    
+    Forms\Components\TextInput::make('email')
+    ->email()
+    ->required(),
 ]);
     }
 
@@ -54,6 +59,9 @@ class PelangganResource extends Resource
 
     Tables\Columns\TextColumn::make('alamat')
         ->limit(30),
+    
+    Tables\Columns\TextColumn::make('email')
+    ->searchable(),
 ])
             ->filters([
                 //
