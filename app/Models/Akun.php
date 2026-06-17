@@ -12,12 +12,20 @@ class Akun extends Model
     protected $table = 'akun';
 
     protected $primaryKey = 'kode_akun';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
-//coba
+
     protected $fillable = [
         'kode_akun',
         'nama_akun',
         'header_akun',
     ];
+
+    // Relasi ke jurnal detail
+    public function jurnalDetails()
+    {
+        return $this->hasMany(JurnalDetail::class, 'kode_akun', 'kode_akun');
+    }
 }
