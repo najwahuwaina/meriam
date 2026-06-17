@@ -6,6 +6,7 @@ use App\Filament\Resources\PesananResource;
 use App\Models\Pesanan;
 use App\Models\AiInsight;
 use Filament\Actions;
+use Filament\Forms;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Support\Facades\Http;
@@ -28,29 +29,99 @@ class ListPesanans extends ListRecords
 
                 ->color('success')
 
-                ->requiresConfirmation()
+                ->modalHeading('🤖 Analisis Penjualan AI')
 
-                ->action(function () {
+->modalDescription(
+    'Pilih periode penjualan yang akan dianalisis menggunakan Gemini AI.'
+)
 
-                    $jumlahPesanan = Pesanan::count();
+->form([
 
-                    $totalPendapatan = Pesanan::sum('total_harga');
+    Forms\Components\Section::make(
+        '📅 Pilih Periode Analisis'
+    )
+        ->description(
+            'Pilih rentang tanggal yang ingin dianalisis oleh AI.'
+        )
+        ->schema([
+
+            Forms\Components\DatePicker::make(
+                'tanggal_awal'
+            )
+                ->label('📅 Tanggal Awal')
+                ->required(),
+
+            Forms\Components\DatePicker::make(
+                'tanggal_akhir'
+            )
+                ->label('📅 Tanggal Akhir')
+                ->required(),
+
+        ])
+        ->columns(2),
+
+])
+
+            ->action(function (array $data) {
+
+                    $jumlahPesanan = Pesanan::whereBetween(
+                        'tgl_pesanan',
+                    [
+                         $data['tanggal_awal'],
+                        $data['tanggal_akhir']
+                    ]
+                    )->count();
+
+                    $totalPendapatan = Pesanan::whereBetween(
+                        'tgl_pesanan',
+                    [
+                         $data['tanggal_awal'],
+                        $data['tanggal_akhir']
+                    ]
+                    )->sum('total_harga');
 
                     $prompt = "
 
-                    Sistem penjualan ayam geprek.
+                        Anda adalah analis bisnis profesional untuk restoran ayam geprek.
 
-                    Jumlah pesanan:
-                    {$jumlahPesanan}
+                        Periode Analisis:
 
-                    Total pendapatan:
-                    Rp {$totalPendapatan}
+                        {$data['tanggal_awal']}
+                        sampai
+                        {$data['tanggal_akhir']}
 
-                    Buat analisis bisnis singkat.
-                    Sebutkan kondisi penjualan.
-                    Berikan 3 rekomendasi untuk meningkatkan penjualan.
+                        Jumlah Pesanan:
+                        {$jumlahPesanan}
 
-                    ";
+                        Total Pendapatan:
+                        Rp {$totalPendapatan}
+
+                        Buat laporan yang rapi dan mudah dibaca dengan format berikut:
+
+                        📊 ANALISIS PENJUALAN AI
+
+                        📌 Ringkasan
+                        (Jelaskan kondisi penjualan secara singkat)
+
+                        📈 Kondisi Penjualan
+                        (Jelaskan kondisi penjualan saat ini berdasarkan data)
+
+                        💡 Rekomendasi
+                        1. ...
+                        2. ...
+                        3. ...
+
+                        ✅ Kesimpulan
+                        (Berikan kesimpulan singkat)
+
+                        Gunakan bahasa Indonesia yang formal dan profesional.
+
+                        Jangan gunakan markdown seperti:
+                        ###, **, ---, atau simbol teknis lainnya.
+
+                        Buat hasil terlihat seperti laporan bisnis yang siap dibaca pemilik usaha.
+
+                        ";
 
                     $apiKey = env('GEMINI_API_KEY');
 
@@ -75,7 +146,7 @@ class ListPesanans extends ListRecords
 
                         Notification::make()
                             ->title('Gagal menghubungi Gemini AI')
-                            ->body(json_encode($data))
+                            ->body('Gemini AI sedang sibuk. Silakan coba lagi beberapa menit.')
                             ->danger()
                             ->send();
 
